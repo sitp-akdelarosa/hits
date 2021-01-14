@@ -1,0 +1,15 @@
+[MENU1]
+#FORM_PATH=D:\Inetpub\wwwroot\adminmenu\style\
+FORM_PATH=D:\Inetpub\wwwroot\20090316\adminmenu\style\
+#GUIDE_BOOK=D:\Inetpub\wwwroot\guide\
+GUIDE_BOOK=D:\Inetpub\wwwroot\20090316\guide\
+[MENU2]
+#INFORM_INI_PATH=D:\Inetpub\wwwroot\inform\INI\
+INFORM_INI_PATH=D:\Inetpub\wwwroot\20090316\inform\INI\
+MAIL_SEND_FLAG=1
+MAIL_SERVER=slitdns2.hits-h.com
+MAIL_FROM=mrhits@hits-h.com
+MAIL_SUBJECT=HiTS‚æ‚è‚¨’m‚ç‚¹
+[MENU7]
+#TERMINAL_MAP_PATH=D:\Inetpub\wwwroot\gif\
+TERMINAL_MAP_PATH=D:\Inetpub\wwwroot\20090316\gif\

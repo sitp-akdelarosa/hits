@@ -1,0 +1,221 @@
+<html>
+<head>
+<style type="text/css"> 
+    table {
+        border: solid #66CC99;
+        border-width: 0px 1px 1px 0px;
+        width: 400px;
+    }
+    th, td {
+        border: solid #66CC99;
+        border-width: 1px 0px 0px 1px;
+        padding: 4px;
+    }
+    th {
+        background-color: #339999;
+        color: #FFFFFF;
+    }
+    tr.alt td {
+        background-color: #EEEEEE;
+    }
+    tbody {
+        height: 200px;
+        overflow-y: auto;
+        overflow-x: auto;
+    }
+    div {
+            position: relative;
+            height: 200px;
+            width: 416px;
+            overflow-y: scroll;
+            overflow-x: scroll;
+            border: solid #66CC99;
+            border-width: 0px 0px 1px 0px;
+    }
+        thead tr  {
+            position: relative;
+            top: expression(this.offsetParent.scrollTop);
+        }    
+        th.hlist  {
+            position: relative;
+        }            
+</style>
+<!--[if IE]>
+    <style type="text/css">
+        div {
+            position: relative;
+            height: 200px;
+            width: 416px;
+            overflow-y: scroll;
+            overflow-x: scroll;
+            border: solid #66CC99;
+            border-width: 0px 0px 1px 0px;
+        }
+        table {
+            border-width: 1px 1px 0px 0px;
+        }
+        thead tr {
+            position: relative;
+            top: expression(this.offsetParent.scrollTop);
+        }
+        tbody {
+            height: auto;
+            width: auto;
+        }
+        table tbody tr:first-child td {
+            padding: 29px 4px 4px 4px;
+        }
+    </style>
+<![endif]--> 
+ 
+</head>
+<body>
+<div>
+    <table border="0" cellspacing="0" cellpadding="0">
+        <thead >
+              <tr >
+                    <th class=hlist rowspan=2>HEADER 2<br /> test</th>
+                    <th  colspan=2>HEADER 1</th>
+                    <th class=hlist rowspan=2>HEADER 3</th>
+                    <th class=hlist  rowspan=2>HEADER 4</th>
+                    <th class=hlist  rowspan=2>HEADER 5</th>
+                    <th class=hlist  rowspan=2>HEADER 6</th>
+              </tr>
+              <tr>
+                    <th >HEADER A</th>
+                    <th>HEADER B</th>
+              </tr>
+ 
+        </thead>
+        <tbody>
+              <tr>
+                    <td >&nbsp;</td>
+                    <td >&nbsp;</td>
+                    <td >&nbsp;</td>
+                    <td >&nbsp;</td>
+                    <td >&nbsp;</td>
+                    <td >&nbsp;</td> 
+                    <td >&nbsp;</td> 
+              </tr>
+              <tr class="alt">
+                    <td>content a</td>
+                    <td>content b</td>
+                    <td>content c</td>
+                    <td>content d</td>
+                    <td>content e</td>
+                    <td>content f</td>
+                    <td>content g</td>
+              </tr>
+              <tr>
+                    <td>content X1</td>
+                    <td>content X2</td>
+                    <td>content X3</td>
+                    <td>content X4</td>
+                    <td>content X5</td>
+                    <td>content X6</td>
+                    <td>content X7</td>
+              </tr>
+              <tr class="alt">
+                    <td>content Y1</td>
+                    <td>content Y2</td>
+                    <td>content Y3</td>
+                    <td>content Y4</td>
+                    <td>content Y5</td>
+                    <td>content Y6</td>
+                    <td>content Y7</td>
+              </tr>
+              <tr>
+                    <td>content Z1</td>
+                    <td>content Z2</td>
+                    <td>content Z3</td>
+                    <td>content Z4</td>
+                    <td>content Z5</td>
+                    <td>content Z6</td>
+                    <td>content Z7</td>
+              </tr>
+              <tr class="alt">
+                    <td>content V1</td>
+                    <td>content V2</td>
+                    <td>content V3</td>
+                    <td>content V4</td>
+                    <td>content V5</td>
+                    <td>content V6</td>
+                    <td>content V7</td>
+              </tr>
+              <tr>
+                    <td>content M1</td>
+                    <td>content M2</td>
+                    <td>content M3</td>
+                    <td>content M4</td>
+                    <td>content M5</td>
+                    <td>content M6</td>
+                    <td>content M7</td>
+              </tr>
+              <tr class="alt">
+                    <td>content N1</td>
+                    <td>content N2</td>
+                    <td>content N3</td>
+                    <td>content N4</td>
+                    <td>content N5</td>
+                    <td>content N6</td>
+                    <td>content N7</td>
+              </tr>
+              <tr>
+                    <td>content O1</td>
+                    <td>content O2</td>
+                    <td>content O3</td>
+                    <td>content O4</td>
+                    <td>content O5</td>
+                    <td>content O6</td>
+                    <td>content O7</td>
+              </tr>
+              <tr class="alt">
+                    <td>content P1</td>
+                    <td>content P2</td>
+                    <td>content P3</td>
+                    <td>content P4</td>
+                    <td>content P5</td>
+                    <td>content P6</td>
+                    <td>content P7</td>
+              </tr>
+              <tr>
+                    <td>content Q1</td>
+                    <td>content Q2</td>
+                    <td>content Q3</td>
+                    <td>content Q4</td>
+                    <td>content Q5</td>
+                    <td>content Q6</td>
+                    <td>content Q7</td>
+              </tr>
+              <tr class="alt">
+                    <td>content R1</td>
+                    <td>content R2</td>
+                    <td>content R3</td>
+                    <td>content R4</td>
+                    <td>content R5</td>
+                    <td>content R6</td>
+                    <td>content R7</td>
+              </tr>
+              <tr>
+                    <td>content S1</td>
+                    <td>content S2</td>
+                    <td>content S3</td>
+                    <td>content S4</td>
+                    <td>content S5</td>
+                    <td>content S6</td>
+                    <td>content S7</td>
+              </tr>
+              <tr class="alt">
+                    <td>content T1</td>
+                    <td>content T2</td>
+                    <td>content T3</td>
+                    <td>content T4</td>
+                    <td>content T5</td>
+                    <td>content T6</td>
+                    <td>content T7</td>
+              </tr>
+        </tbody>
+    </table>
+</div> 
+</body>
+</html>

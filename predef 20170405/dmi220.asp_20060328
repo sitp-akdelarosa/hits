@@ -1,0 +1,314 @@
+<% @LANGUAGE = VBScript %>
+<%
+'_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
+'_/	SystemName	:Hits					_/
+'_/	FileName	:dmi220.asp				_/
+'_/	Function	:事前空搬出入力画面			_/
+'_/	Date		:2003/05/28				_/
+'_/	Code By		:SEIKO Electric.Co 大重			_/
+'_/	Modify		:C-002	2003/08/06	備考欄追加	_/
+'_/	Modify		:3th	2003/01/31	3次全面改修	_/
+'_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
+%>
+<% Option Explicit %>
+<%
+	'HTTPコンテンツタイプ設定
+	Response.ContentType = "text/html; charset=Shift_JIS"
+%>
+<!--#include File="Common.inc"-->
+<%
+'セッションの有効性をチェック
+  CheckLoginH
+'サーバ日付の取得
+ dim DayTime
+ getDayTime DayTime
+
+'データ所得
+  dim BookNo, COMPcd0, COMPcd1, Mord, TFlag
+  dim Dflag,plintStr,i
+  BookNo  = Request("BookNo")
+  COMPcd0 = Request("COMPcd0")
+  COMPcd1 = Request("COMPcd1")
+  Mord    = Request("Mord")
+  Dflag=""
+  plintStr=""
+
+  If Mord=0 Then '新規登録時
+  
+  Else          '更新時
+    WriteLogH "b302", "空搬出事前情報入力","12",""
+    TFlag   = Request("TFlag")
+'Chang 20050303 STAT fro Fourth Recon By SEIKO N.Oosige
+'    If COMPcd0 <> UCase(Session.Contents("userid")) OR TFlag = 1 Then
+    If COMPcd0 <> UCase(Session.Contents("userid")) OR TFlag = 1 OR Request("compFlag")<>0 Then
+      Dflag="readOnly"
+    End If
+    plintStr="(更新モード)"
+  End If
+
+%>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML><HEAD>
+<LINK REL="stylesheet" TYPE="text/css" HREF="./style.css">
+<TITLE>空搬出情報入力更新</TITLE>
+<META content="text/html; charset=Shift_JIS" http-equiv=Content-Type>
+<SCRIPT src="./JS/Common.js"></SCRIPT>
+<SCRIPT language=JavaScript>
+<!--
+function setParam(target){
+  window.resizeTo(550,680);
+  bgset(target);
+}
+//更新
+function GoNext(){
+  target=document.dmi220F;
+  if(!check(target))
+    return;
+  chengeUpper(target);
+  target.action="./dmi230.asp";
+  target.submit();
+}
+//削除
+function GoDell(){
+<%If TFlag<>1 Then%>
+  flag = confirm('削除しますか？');
+<%Else%>
+  flag = confirm('指示先が受諾回答済です。\n削除する前に指示先に確認してください。\n削除しますか？');
+<%End If%>
+  if(flag){
+    target=document.dmi220F;
+    target.action="./dmi290.asp";
+    len = target.elements.length;
+    for (i=0; i<len; i++) target.elements[i].disabled = false;
+    target.submit();
+  }
+}
+//保留
+function Suspend(){
+  target=document.dmi220F;
+  if(target.way[1].checked){
+    flag = confirm('回答をNoにしますか？');
+    if(!flag) return false;
+    target.Res.value=2;
+  }
+  target.action="./dmi230.asp";
+  target.submit();
+}
+//ブッキング情報
+function GoBookI(){
+  target=document.dmi220F
+  BookInfo(target);
+}
+
+//入力情報チェック
+function check(target){
+  if(!CheckEisu2(target.COMPcd1.value)){
+    alert("会社コードに半角英数字以外の文字を記入しないでください");
+    target.COMPcd1.focus();
+    return;
+  }
+  strA    = new Array();
+  strA[0] = target.ContSize0;
+  strA[1] = target.ContSize1;
+  strA[2] = target.ContSize2;
+  strA[3] = target.ContSize3;
+  strA[4] = target.ContSize4;
+  strA[5] = target.ContHeight0;
+  strA[6] = target.ContHeight1;
+  strA[7] = target.ContHeight2;
+  strA[8] = target.ContHeight3;
+  strA[9] = target.ContHeight4;
+  strA[10]= target.PickNum0;
+  strA[11]= target.PickNum1;
+  strA[12]= target.PickNum2;
+  strA[13]= target.PickNum3;
+  strA[14]= target.PickNum4;
+  strA[15]= target.vanMin;
+  for(k=0;k<16;k++){
+    if(strA[k].value!="" && strA[k].value!=null){
+      ret = CheckSu(strA[k].value); 
+      if(ret==false){
+        alert("数字以外を入力しないでください。");
+        strA[k].focus();
+        return false;
+      }
+    }
+  }
+  strA    = new Array();
+  strA[0] = target.ContType0;
+  strA[1] = target.ContType1;
+  strA[2] = target.ContType2;
+  strA[3] = target.ContType3;
+  strA[4] = target.ContType4;
+  strA[5] = target.Material0;
+  strA[6] = target.Material1;
+  strA[7] = target.Material2;
+  strA[8] = target.Material3;
+  strA[9] = target.Material4;
+  for(k=0;k<10;k++){
+    if(strA[k].value!="" && strA[k].value!=null){
+      ret = CheckEisu2(strA[k].value); 
+      if(ret==false){
+        alert("半角英数字以外の文字を入力しないでください");
+        strA[k].focus();
+        return false;
+      }
+    }
+  }
+//日付のチェック
+  if(!CheckDate('<%=DayTime(0)%>','<%=DayTime(1)%>',target.vanMon,target.vanDay,target.vanHou)){
+    return false;
+  }else{
+    if(target.vanHou.value=="")
+      target.vanMin.value="";
+    if(target.vanMin.value>59){
+      alert("分は0～59で入力してください");
+      target.vanMin.focus();
+      return false;
+    }
+  }
+  NumA    = new Array();
+  strA[0] = target.PickPlace0;	NumA[0]=20;
+  strA[1] = target.PickPlace1;	NumA[1]=20;
+  strA[2] = target.PickPlace2;	NumA[2]=20;
+  strA[3] = target.PickPlace3;	NumA[3]=20;
+  strA[4] = target.PickPlace4;	NumA[4]=20;
+  strA[5] = target.vanPlace1;	NumA[5]=70;
+  strA[6] = target.vanPlace2;	NumA[6]=70;
+  strA[7] = target.goodsName;	NumA[7]=20;
+  strA[8] = target.Comment1;	NumA[8]=70;
+  strA[9] = target.Comment2;	NumA[9]=70;
+  for(k=0;k<10;k++){
+    if(strA[k].value!="" && strA[k].value!=null){
+      ret = CheckKin(strA[k].value); 
+      if(ret==false){
+        alert("「\"」や「\'」等の半角記号を入力しないでください。");
+        strA[k].focus();
+        return false;
+      }
+      retA=getByte(strA[k].value);
+      if(retA[0]>NumA[k]){
+        if(retA[2]>(NumA[k]/2)){
+          alertStr="全角文字を"+(NumA[k]/2)+"文字以内で入力してください。";
+        }else{
+          alertStr="全角文字を"+Math.floor((NumA[k]-retA[1])/2)+"文字にするか\n";
+          alertStr=alertStr+"半角文字を"+(NumA[k]-retA[2]*2)+"文字にしてください。";
+        }
+        alert(NumA[k]+"バイト以内で入力してください。\n"+NumA[k]+"バイト以内にするには"+alertStr);
+        strA[k].focus();
+        return false;
+      }
+    }
+  }
+  return true;
+}
+// -->
+</SCRIPT>
+
+<META content="MSHTML 5.00.2919.6307" name=GENERATOR></HEAD>
+<BODY leftMargin=0 topMargin=0 marginheight="0" marginwidth="0"  onLoad="setParam(document.dmi220F)">
+<!-------------空搬出情報入力更新画面--------------------------->
+<FORM name="dmi220F" method="POST">
+<TABLE border=0 cellPadding=3 cellSpacing=0 width="100%">
+  <TR>
+    <TD colspan=2>
+      <B>空搬出情報入力<%=plintStr%></B></TD></TR>
+  <TR>
+    <TD><DIV class=bgb>ブッキングＮｏ．</DIV></TD>
+    <TD><INPUT type=text name="BookNoM" value="<%=Request("BookNoM")%>" readOnly size=40>
+        <INPUT type=hidden name="BookNo" value="<%=Request("BookNo")%>"></TD></TR>
+  <TR>
+    <TD><DIV class=bgb>船社</DIV></TD>
+    <TD><INPUT type=text name="shipFact" value="<%=Request("shipFact")%>" readOnly size=40></TD></TR>
+  <TR>
+    <TD><DIV class=bgb>船名</DIV></TD>
+    <TD><INPUT type=text name="shipName" value="<%=Request("shipName")%>" readOnly size=40></TD></TR>
+  <TR>
+    <TD><DIV class=bgb>仕向地</DIV></TD>
+    <TD><INPUT type=text name="delivTo" value="<%=Request("delivTo")%>" readOnly size=40></TD></TR>
+  <TR>
+    <TD><DIV class=bgb>会社コード(陸運)</DIV></TD>
+    <TD><INPUT type=text name="COMPcd1" value="<%=Trim(COMPcd1)%>" size=5 <%=Dflag%> maxlength=2>
+        <INPUT type=hidden name="oldCOMPcd1" value="<%=Request("oldCOMPcd1")%>"></TD></TR>
+  <TR>
+    <TD><DIV class=bgb>属性と本数</DIV></TD>
+    <TD></TD></TR>
+  <TR>
+    <TD colspan=2>
+    <TABLE border=0 cellPadding=0 cellSpacing=0 width=400 align=center>
+      <TR><TD></TD><TD>サイズ</TD><TD>タイプ</TD><TD>高さ</TD><TD>材質</TD><TD>ピック場所</TD><TD></TD><TD>本数</TD></TR>
+<% For i=0 To 4%>
+      <TR><TD>(<%=i+1%>)</TD>
+          <TD><INPUT type=text name="ContSize<%=i%>"   value="<%=Request("ContSize"&i)%>" size=4 <%=Dflag%> maxlength=2></TD>
+          <TD><INPUT type=text name="ContType<%=i%>"   value="<%=Request("ContType"&i)%>" size=4 <%=Dflag%> maxlength=2></TD>
+          <TD><INPUT type=text name="ContHeight<%=i%>" value="<%=Request("ContHeight"&i)%>" size=4 <%=Dflag%> maxlength=2></TD>
+          <TD><INPUT type=text name="Material<%=i%>"   value="<%=Request("Material"&i)%>" size=4 <%=Dflag%> maxlength=1></TD>
+          <TD><INPUT type=text name="PickPlace<%=i%>"  value="<%=Request("PickPlace"&i)%>" size=25 <%=Dflag%> maxlength=20></TD>
+          <TD>・・・</TD>
+          <TD><INPUT type=text name="PickNum<%=i%>" value="<%=Request("PickNum"&i)%>" size=4 <%=Dflag%> maxlength=3></TD></TR>
+<% Next %>
+    </TABLE>
+    </TD></TR>
+  <TR>
+    <TD><DIV class=bgb>バン詰め日時</DIV></TD>
+    <TD><INPUT type=text name="vanMon" value="<%=Request("vanMon")%>" size=3 <%=Dflag%> maxlength=2>月
+        <INPUT type=text name="vanDay" value="<%=Request("vanDay")%>" size=3 <%=Dflag%> maxlength=2>日
+        <INPUT type=text name="vanHou" value="<%=Request("vanHou")%>" size=3 <%=Dflag%> maxlength=2>時
+        <INPUT type=text name="vanMin" value="<%=Request("vanMin")%>" size=3 <%=Dflag%> maxlength=2>分
+        </TD></TR>
+  <TR>
+    <TD><DIV class=bgb>バン詰め場所１</DIV></TD>
+    <TD><INPUT type=text name="vanPlace1" value="<%=Request("vanPlace1")%>" size=73 <%=Dflag%> maxlength=70></TD></TR>
+  <TR>
+    <TD><DIV class=bgb>バン詰め場所２</DIV></TD>
+    <TD><INPUT type=text name="vanPlace2" value="<%=Request("vanPlace2")%>" size=73 <%=Dflag%> maxlength=70></TD></TR>
+  <TR>
+    <TD><DIV class=bgb>品名</DIV></TD>
+    <TD><INPUT type=text name="goodsName" value="<%=Request("goodsName")%>" size=30 <%=Dflag%> maxlength=20></TD></TR>
+  <TR>
+    <TD><DIV class=bgb>搬入先ＣＹ．ＣＹカット日</DIV></TD>
+    <TD><INPUT type=text name="Terminal" value="<%=Request("Terminal")%>" readOnly>
+        <INPUT type=text name="CYCut" value="<%=Request("CYCut")%>" readOnly></TD></TR>
+  <TR>
+    <TD><DIV class=bgb>備考１</DIV></TD>
+    <TD><INPUT type=text name="Comment1" value="<%=Request("Comment1")%>" size=73 <%=Dflag%> maxlength=70></TD></TR>
+  <TR>
+    <TD><DIV class=bgb>備考２</DIV></TD>
+    <TD><INPUT type=text name="Comment2" value="<%=Request("Comment2")%>" size=73 <%=Dflag%> maxlength=70></TD></TR>
+
+  <TR>
+    <TD colspan=2 align=center>
+<% If Request("ErrerM")<>"" Then %>
+       <%= Request("ErrerM") %><BR>
+<% Else %>
+       <P><BR></P>
+<% End If %>
+       <INPUT type=hidden name=COMPcd0 value="<%=COMPcd0%>" >
+<% If Mord=0 Then %>
+       <INPUT type=hidden name=Mord value="0" >
+       <INPUT type=button value="登録" onClick="GoNext()">
+<% ElseIf COMPcd0 = UCase(Session.Contents("userid")) Then%>
+       <INPUT type=hidden name=Mord value="1" >
+  <%If TFlag<>1 AND Request("compFlag")=0 Then%>
+       <INPUT type=button value="更新" onClick="GoNext()">
+  <% End If %>
+       <INPUT type=button value="削除" onClick="GoDell()">
+<% Else %>
+       <INPUT type=hidden name=Mord value="2" >
+       <DIV class=bgw>指示元へ回答　　　
+       <INPUT type=radio name="way" checked>Yes　
+       <INPUT type=radio name="way">No</DIV>
+       <INPUT type=hidden name=Res value="1" >
+    </TD></TR>
+    <TR><TD colspan=2 align=center>
+       <INPUT type=button value="更新" onClick="Suspend()">
+<% End If %>
+       <INPUT type=button value="キャンセル" onClick="window.close()">
+       <P>
+       <INPUT type=button value="ブッキング情報" onClick="GoBookI()">
+    </TD></TR>
+
+</TABLE>
+</FORM>
+<!-------------画面終わり--------------------------->
+</BODY></HTML>

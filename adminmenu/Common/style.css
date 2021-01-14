@@ -1,0 +1,211 @@
+BODY.bckcolor{
+	background-color:#FFFFFF;	
+}
+A{
+    TEXT-DECORATION: none
+}
+A:link{
+    COLOR: #000000;
+}
+A:visited{
+    COLOR: #000000;
+}
+A:active{
+    COLOR: #000000;
+}
+A:hover{
+    COLOR: red
+}
+DIV.listbox{
+	height:120px; 
+	overflow-y:scroll;
+	background-color:#FFFFFF;
+	border-top: #666666 2px solid;
+	border-left: #666666 2px solid;
+	border-bottom: #CCCCCC 2px solid;
+	border-right: #CCCCCC 2px solid;
+}
+INPUT.hide{
+  position:absolute;
+  left:-137px;
+  -moz-opacity:0;
+  filter:alpha(opacity: 0);
+  opacity: 0;
+  z-index: 2;
+}
+INPUT.chrReadOnly
+{
+    BACKGROUND-COLOR: #99CCFF;
+    BORDER-BOTTOM: #33CCCC 0px solid;
+    BORDER-LEFT: #33CCCC 0px solid;
+    BORDER-RIGHT: #33CCCC 0px solid;
+    BORDER-TOP: #33CCCC 0px solid;   
+    TEXT-ALIGN: left
+}
+.chrReadOnly2
+{
+    BACKGROUND-COLOR: #FFFFFF;
+    BORDER-BOTTOM: #FFFFFF 0px solid;
+    BORDER-LEFT: #FFFFFF 0px solid;
+    BORDER-RIGHT: #FFFFFF 0px solid;
+    BORDER-TOP: #FFFFFF 0px solid;   
+    TEXT-ALIGN: left
+}
+.chrReadOnly3
+{
+    BACKGROUND-COLOR: #999999;
+    BORDER-BOTTOM: #FFFFFF 0px solid;
+    BORDER-LEFT: #FFFFFF 0px solid;
+    BORDER-RIGHT: #FFFFFF 0px solid;
+    BORDER-TOP: #FFFFFF 0px solid;   
+    TEXT-ALIGN: left
+}
+
+.highlight
+{
+    BACKGROUND-COLOR: blue;
+	color:#FFFFFF;
+    BORDER-BOTTOM: #FFFFFF 0px solid;
+    BORDER-LEFT: #FFFFFF 0px solid;
+    BORDER-RIGHT: #FFFFFF 0px solid;
+    BORDER-TOP: #FFFFFF 0px solid;   
+    TEXT-ALIGN: left
+}
+.num
+{    
+    FONT-WEIGHT: normal;
+    /*PADDING-BOTTOM: 2px;
+    PADDING-LEFT: 0px;
+    PADDING-RIGHT: 2px;
+    PADDING-TOP: 3px;*/
+    TEXT-ALIGN: right
+}
+.chrInLeft
+{
+    BACKGROUND-COLOR: #ffffff;
+    COLOR: black;
+    FONT-WEIGHT: normal;
+    PADDING-BOTTOM: 0px;
+    PADDING-LEFT: 1px;
+    PADDING-RIGHT: 2px;
+    PADDING-TOP: 2px;
+    TEXT-ALIGN: left
+}
+TD.list_right
+{
+    BACKGROUND-COLOR: #33CCCC;
+    BORDER-BOTTOM: #33CCCC 0px solid;
+    BORDER-LEFT: #33CCCC 0px solid;
+    BORDER-RIGHT: #33CCCC 0px solid;
+    BORDER-TOP: #33CCCC 0px solid;
+    HEIGHT: 20px;
+    PADDING-BOTTOM: 0px;
+    PADDING-LEFT: 1px;
+    PADDING-RIGHT: 7px;
+    PADDING-TOP: 0px;
+    TEXT-ALIGN: right
+}
+TD.list
+{
+/*    BACKGROUND-COLOR: #33CCCC;
+    BORDER-BOTTOM: #33CCCC 0px solid;
+    BORDER-LEFT: #33CCCC 0px solid;
+    BORDER-RIGHT: #33CCCC 0px solid;
+    BORDER-TOP: #33CCCC 0px solid;    
+    PADDING-BOTTOM: 0px;
+    PADDING-LEFT: 1px;
+    PADDING-RIGHT: 7px;
+    PADDING-TOP: 0px;*/
+	HEIGHT: 20px;
+    TEXT-ALIGN: right
+}
+TD.list2
+{
+    BACKGROUND-COLOR: #FFFFFF;
+    BORDER-BOTTOM: #FFFFFF 0px solid;
+    BORDER-LEFT: #FFFFFF 0px solid;
+    BORDER-RIGHT: #FFFFFF 0px solid;
+    BORDER-TOP: #FFFFFF 0px solid;
+    HEIGHT: 20px;
+    PADDING-BOTTOM: 0px;
+    PADDING-LEFT: 1px;
+    PADDING-RIGHT: 7px;
+    PADDING-TOP: 0px;
+    TEXT-ALIGN: right
+}
+TD.footer2{
+	font-family: Tahoma, Arial, "MS Gothic";
+	font-size: 12px;
+	color: #FFFFFF;
+	border: 1px solid #FFFFFF;
+	line-height: 150%;
+	text-indent: 5px;
+	background-color: #3366CC;
+}
+
+TABLE.box{
+	BORDER-BOTTOM: #000000 1px solid;
+    BORDER-LEFT: #000000 1px solid;
+    BORDER-RIGHT: #000000 1px solid;
+    BORDER-TOP: #000000 1px solid;	
+}
+TABLE.main{
+	background:url(/gif/loginback.gif);
+	height:100%;
+	width:830px;	
+}
+TABLE.main2{
+	background:url(/gif/back.gif);
+	height:100%;
+	width:830px;	
+}
+TABLE.square{
+	background-color:#99CCFF;
+	vertical-align:middle;
+	BORDER-BOTTOM: #0000FF 1px solid;
+    BORDER-LEFT: #0000FF 1px solid;
+    BORDER-RIGHT: #0000FF 1px solid;
+    BORDER-TOP: #0000FF 1px solid; 
+}
+TD.headermenu{
+	font-family: Tahoma, Arial, "MS Gothic";
+	font-size: 40px;
+	color: #FFFFFF;
+	line-height: 150%;
+	text-indent: 5px;
+	background-color: #3366CC;
+}
+TD.data
+{    
+    background-color: #99CCFF;
+	BORDER-BOTTOM: #000000 1px solid;
+    BORDER-LEFT: #000000 1px solid;
+    BORDER-RIGHT: #000000 1px solid;
+    BORDER-TOP: #000000 1px solid; 
+    PADDING-LEFT: 5px;
+    TEXT-ALIGN: left
+}
+TD.data2
+{   
+	background-color: #FFFFFF;
+	BORDER-BOTTOM: #000000 1px solid;
+    BORDER-LEFT: #000000 1px solid;
+    BORDER-RIGHT: #000000 1px solid;
+    BORDER-TOP: #000000 1px solid;     
+    TEXT-ALIGN: left
+}
+TD.menu{
+	COLOR:FF6600;
+}
+TH.menutitle
+{
+    BACKGROUND-COLOR: #3366FF;
+	color:#FFFFFF;
+    BORDER-BOTTOM: #000000 1px solid;
+    BORDER-LEFT: #000000 1px solid;
+    BORDER-RIGHT: #000000 1px solid;
+    BORDER-TOP: #000000 1px solid;
+    FONT-WEIGHT: normal;
+    PADDING-LEFT: 5px;
+    TEXT-ALIGN: center;
+}

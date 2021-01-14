@@ -1,0 +1,280 @@
+<% @LANGUAGE = VBScript %>
+<%
+'_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
+'_/	SystemName	:Hits					_/
+'_/	FileName	:dmo315.asp				_/
+'_/	Function	:事前実搬入情報取得		_/
+'_/	Date		:2004/01/31				_/
+'_/	Code By		:SEIKO Electric.Co 大重			_/
+'_/	Modify		:								_/
+'_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
+%>
+<% Option Explicit %>
+<%
+	'HTTPコンテンツタイプ設定
+	Response.ContentType = "text/html; charset=Shift_JIS"
+%>
+<!--#include File="Common.inc"-->
+<%
+'セッションの有効性をチェック
+  CheckLoginH
+  
+'データを取得
+  dim CONnum,BookNo,User
+  BookNo = Trim(Request("BookNo"))
+  CONnum = Trim(Request("CONnum"))
+  User   = Session.Contents("userid")
+
+'データをDBより検索
+  dim shipFact,shipName,RecTerminal,PlaceDel,LPort,DPort
+  dim RHO,SetTemp,Ventilation,IMDG1,IMDG2,IMDG3,UNNo1,UNNo2,UNNo3
+  dim ContSize,ContType,ContHeight,Material,TareWeight,SealNo,ContWeight
+  dim CMPcd,MrSk,HFrom,TuSk,NextV,OH,OWL,OWR,OLF,OLA,NiwataP,Operator
+  dim Hmon,Hday,HedId,Comment1,Comment2,Comment3
+  dim SakuNo,UpFlag,compFlag,WkCNo,TruckerFlag
+
+  CMPcd   =Array(Ucase(User),"","","","")
+'エラートラップ開始
+  on error resume next
+'DB接続
+  dim ObjConn, ObjRS, StrSQL, ErrerM
+  ConnDBH ObjConn, ObjRS
+'ブッキング番号の存在チェック
+  dim dummy,ret
+  ret=true
+  StrSQL = "SELECT Count(BOK.BookNo) AS Num "&_
+           "From Booking AS BOK WHERE BOK.BookNo='"& BookNo &"'"
+  ObjRS.Open StrSQL, ObjConn
+  if err <> 0 then
+    DisConnDBH ObjConn, ObjRS	'DB切断
+    jampErrerP "1","b401","01","実搬入：存在チェック","101","SQL:<BR>"&StrSQL
+  end if
+  If Trim(ObjRS("Num")) = "0" Then
+    ret=false
+    ErrerM="指定したブッキングNoがシステムに登録されていません。<BR>入力の間違いがないか番号を確認してください。</P>"
+  End If
+  ObjRS.Close
+
+  If ret Then
+  '重複チェック
+    StrSQL = "SELECT Count(ITC.WkContrlNo) AS Num "&_
+             "FROM hITCommonInfo AS ITC LEFT JOIN CYVanInfo AS CYV ON (ITC.WkNo = CYV.WkNo) AND (ITC.ContNo = CYV.ContNo) "&_
+             "WHERE ITC.ContNo='" & CONnum &"' AND ITC.Process='R' AND ITC.WkType='3' AND CYV.BookNo='"& BookNo &"' "
+    ObjRS.Open StrSQL, ObjConn
+    if err <> 0 then
+      DisConnDBH ObjConn, ObjRS	'DB切断
+      jampErrerP "1","b401","01","実搬入：存在重複チェック","101","SQL:<BR>"&StrSQL
+    end if
+    If Trim(ObjRS("Num")) <> "0" Then
+      ret=false
+      ErrerM="指定したブッキングNo、コンテナ番号はすでに登録されています</P>"
+
+    End If
+    ObjRS.Close
+    If ret Then
+      StrSQL = "SELECT BOK.RecTerminal, BOK.PlaceRec, BOK.LPort, "&_
+               "CYV.ShipLine,CYV.VslName,CYV.DPort, CYV.Voyage,CYV.DelivPlace,CYV.Operator,"&_
+               "CYV.OvHeight,CYV.OvWidthL,CYV.OvWidthR,CYV.OvLengthF,CYV.OvLengthA,"&_
+               "CON.ContSize, CON.ContType, CON.ContHeight, CON.Material, CON.TareWeight, "&_
+               "EXC.RHO, EXC.SetTemp, EXC.Ventilation, " &_
+               "EXC.IMDG1, EXC.IMDG2, EXC.IMDG3, EXC.UNNo1, EXC.UNNo2,EXC.UNNo3 "&_
+               "From Booking AS BOK LEFT JOIN mVessel AS mV ON BOK.VslCode = mV.VslCode "&_
+               "LEFT JOIN CYVanInfo CYV ON BOK.BookNo=CYV.BookNo AND SenderCode=' ' "&_
+               "LEFT JOIN ExportCont AS EXC ON EXC.ContNo='"& CONnum &"' "&_
+               "AND BOK.BookNo=EXC.BookNo AND BOK.VslCode=EXC.VslCode AND BOK.VoyCtrl=EXC.VoyCtrl "&_
+               "LEFT JOIN Container AS CON ON EXC.ContNo=CON.ContNo "&_
+               "AND EXC.VslCode=CON.VslCode AND EXC.VoyCtrl=CON.VoyCtrl "&_
+               "WHERE BOK.BookNo='"& BookNo &"' "&_
+               "ORDER BY BOK.UpdtTime DESC"
+'CW-324 Change ASC->DESC
+'20040227 Change PlaceDel->PlaceRec
+      ObjRS.Open StrSQL, ObjConn
+      if err <> 0 then
+        DisConnDBH ObjConn, ObjRS	'DB切断
+        jampErrerP "1","b401","01","実搬入：データ取得","102","SQL:<BR>"&StrSQL
+      end if
+      shipFact   = Trim(ObjRS("ShipLine"))		'船社
+      shipName   = Trim(ObjRS("VslName"))		'船名
+      RecTerminal= Trim(ObjRS("RecTerminal"))	'搬入先
+
+'20040227 Change      PlaceDel   = Trim(ObjRS("PlaceDel"))		'荷受地
+      PlaceDel   = Trim(ObjRS("PlaceRec"))		'荷受地
+      LPort      = Trim(ObjRS("LPort"))			'積港
+      DPort      = Trim(ObjRS("DPort"))			'揚港
+      RHO        = Trim(ObjRS("RHO"))
+      SetTemp    = Trim(ObjRS("SetTemp"))		'設定温度
+      Ventilation= Trim(ObjRS("Ventilation"))	'VENT
+      IMDG1      = Trim(ObjRS("IMDG1"))
+      IMDG2      = Trim(ObjRS("IMDG2"))
+      IMDG3      = Trim(ObjRS("IMDG3"))
+      UNNo1      = Trim(ObjRS("UNNo1"))
+      UNNo2      = Trim(ObjRS("UNNo2"))
+      UNNo3      = Trim(ObjRS("UNNo3"))
+      
+      ContSize   = Trim(ObjRS("ContSize"))
+      ContType   = Trim(ObjRS("ContType"))
+      ContHeight = Trim(ObjRS("ContHeight"))
+      Material   = Trim(ObjRS("Material"))
+      TareWeight = Trim(ObjRS("TareWeight"))
+      SealNo     = ""
+      ContWeight = ""	'グロスウェイト
+
+      MrSk       = ""	'丸関
+      HFrom      = ""	'搬入元
+      TuSk       = ""	'通関
+      NextV      = Trim(ObjRS("Voyage"))	'次航
+      OH         = Trim(ObjRS("OvHeight"))
+      OWL        = Trim(ObjRS("OvWidthL"))
+      OWR        = Trim(ObjRS("OvWidthR"))
+      OLF        = Trim(ObjRS("OvLengthF"))
+      OLA        = Trim(ObjRS("OvLengthA"))
+      NiwataP    = Trim(ObjRS("DelivPlace"))	'荷渡地
+      Operator   = Trim(ObjRS("Operator"))	'オペレータ
+      Hmon    = ""	'搬入予定日
+      Hday    = ""
+      HedId   = ""
+      Comment1= ""
+      Comment2= ""
+      Comment3= ""
+      TruckerFlag=0
+'ログインユーザによって会社コード表示制御
+      chengeCompCd CMPcd, UpFlag
+      compFlag = true
+      if err <> 0 then
+        DisConnDBH ObjConn, ObjRS	'DB切断
+        jampErrerP "1","b402","01","実搬入：データ編集","200",""
+      end if
+      ObjRS.Close
+'20040227 ADD START 荷受地、積港、揚港、荷渡地のFullName化
+      Dim StrCodes
+      StrCodes="'"&PlaceDel&"','"&LPort&"','"&DPort&"','"&NiwataP&"'"
+      StrSQL = "SELECT mP.PortCode,mP.FullName From mPort AS mP "&_
+               "WHERE mP.PortCode IN ("& StrCodes &") "
+      ObjRS.Open StrSQL, ObjConn
+      if err <> 0 then
+        DisConnDBH ObjConn, ObjRS	'DB切断
+        jampErrerP "1","b401","01","実搬入：データ取得","102","SQL:<BR>"&StrSQL
+      end if
+      Do Until ObjRS.EOF
+        If Not IsNull(ObjRS("FullName")) Then
+          If PlaceDel=Trim(ObjRS("PortCode")) Then
+            PlaceDel=Trim(ObjRS("FullName"))
+          End If
+          If LPort=Trim(ObjRS("PortCode")) Then
+            LPort=Trim(ObjRS("FullName"))
+          End If
+'20040701暫定対応
+'          If DPort=Trim(ObjRS("PortCode")) Then
+'            DPort=Trim(ObjRS("FullName"))
+'          End If
+'          If NiwataP=Trim(ObjRS("PortCode")) Then
+'            NiwataP=Trim(ObjRS("FullName"))
+'          End If
+        End If
+        ObjRS.MoveNext
+      Loop
+      ObjRS.Close
+'20040227 ADD END
+    End If
+  End If
+'DB接続解除
+  DisConnDBH ObjConn, ObjRS
+'エラートラップ解除
+  on error goto 0
+  
+  If ret Then
+    WriteLogH "b402", "実搬入事前情報入力", "01",BookNo&",入力内容の正誤:0(正しい)"
+  Else
+    WriteLogH "b402", "実搬入事前情報入力", "01",BookNo&",入力内容の正誤:1(誤り)"
+  End If
+%>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML><HEAD>
+<LINK REL="stylesheet" TYPE="text/css" HREF="./style.css">
+<TITLE>実搬入情報取得中</TITLE>
+<META content="text/html; charset=Shift_JIS" http-equiv=Content-Type>
+<SCRIPT src="./JS/Common.js"></SCRIPT>
+<SCRIPT language=JavaScript>
+<!--
+function setParam(target){
+<% If ret Then %>
+  window.resizeTo(850,690);
+  document.dmi315F.action="./dmi320.asp";
+  document.dmi315F.submit();
+<% Else %>
+  window.resizeTo(500,500);
+  window.focus();
+<% End If %>
+}
+// -->
+</SCRIPT>
+
+<META content="MSHTML 5.00.2919.6307" name=GENERATOR></HEAD>
+<BODY onLoad="setParam(document.dmi315F)">
+<!-------------実搬入情報取得画面--------------------------->
+<FORM name="dmi315F" method="POST">
+<% If ret Then %>
+<INPUT type=hidden name="CONnum"  value="<%=CONnum%>">
+<INPUT type=hidden name="BookNo"  value="<%=BookNo%>">
+<INPUT type=hidden name="CONsize" value="<%=ContSize%>">
+<INPUT type=hidden name="CONtype" value="<%=ContType%>">
+<INPUT type=hidden name="CONhite" value="<%=ContHeight%>">
+<INPUT type=hidden name="CONsitu" value="<%=Material%>">
+<INPUT type=hidden name="CONtear" value="<%=TareWeight%>">
+<INPUT type=hidden name="SealNo"  value="<%=SealNo%>">
+<INPUT type=hidden name="GrosW"   value="<%=ContWeight%>">
+<INPUT type=hidden name="HTo"     value="<%=RecTerminal%>">
+<INPUT type=hidden name="ThkSya"  value="<%=shipFact%>">
+<INPUT type=hidden name="ShipN"   value="<%=shipName%>">
+<INPUT type=hidden name="RHO"     value="<%=RHO%>">
+<INPUT type=hidden name="SttiT"   value="<%=SetTemp%>">
+<INPUT type=hidden name="VENT"    value="<%=Ventilation%>">
+<INPUT type=hidden name="NiukP"   value="<%=PlaceDel%>">
+<INPUT type=hidden name="IMDG1"   value="<%=IMDG1%>">
+<INPUT type=hidden name="IMDG2"   value="<%=IMDG2%>">
+<INPUT type=hidden name="IMDG3"   value="<%=IMDG3%>">
+<INPUT type=hidden name="TumiP"   value="<%=LPort%>">
+<INPUT type=hidden name="UNNo1"   value="<%=UNNo1%>">
+<INPUT type=hidden name="UNNo2"   value="<%=UNNo2%>">
+<INPUT type=hidden name="UNNo3"   value="<%=UNNo3%>">
+<INPUT type=hidden name="AgeP"    value="<%=DPort%>">
+
+<INPUT type=hidden name="CMPcd0"  value="<%=CMPcd(0)%>">
+<INPUT type=hidden name="CMPcd1"  value="<%=CMPcd(1)%>">
+<INPUT type=hidden name="CMPcd2"  value="<%=CMPcd(2)%>">
+<INPUT type=hidden name="CMPcd3"  value="<%=CMPcd(3)%>">
+<INPUT type=hidden name="CMPcd4"  value="<%=CMPcd(4)%>">
+<INPUT type=hidden name="MrSk"    value="<%=MrSk%>">
+<INPUT type=hidden name="HedId"   value="<%=HedId%>">
+<INPUT type=hidden name="HFrom"   value="<%=HFrom%>">
+<INPUT type=hidden name="Hmon"    value="<%=Hmon%>">
+<INPUT type=hidden name="Hday"    value="<%=Hday%>">
+<INPUT type=hidden name="TuSk"    value="<%=TuSk%>">
+<INPUT type=hidden name="NextV"   value="<%=NextV%>">
+<INPUT type=hidden name="OH"  value="<%=OH%>">
+<INPUT type=hidden name="OWL" value="<%=OWL%>">
+<INPUT type=hidden name="OWR" value="<%=OWR%>">
+<INPUT type=hidden name="OLF" value="<%=OLF%>">
+<INPUT type=hidden name="OLA" value="<%=OLA%>">
+<INPUT type=hidden name="NiwataP" value="<%=NiwataP%>">
+<INPUT type=hidden name="Operator" value="<%=Operator%>">
+<INPUT type=hidden name="Comment1" value="<%=Comment1%>">
+<INPUT type=hidden name="Comment2" value="<%=Comment2%>">
+<INPUT type=hidden name="Comment3" value="<%=Comment3%>">
+<INPUT type=hidden name="Mord" value="0">
+<INPUT type=hidden name="SakuNo" value="<%=SakuNo%>">
+<INPUT type=hidden name="UpFlag"  value="<%=UpFlag%>">
+<INPUT type=hidden name="compFlag" value="<%=compFlag%>">
+<INPUT type=hidden name="WkCNo"     value="<%=WkCNo%>">
+<INPUT type=hidden name="TruckerFlag" value="<%=TruckerFlag%>">
+<% Else %>
+<CENTER>
+  <DIV class=alert>
+    <%= ErrerM %>
+  </DIV>
+  <P><INPUT type=button value="閉じる" onClick="window.close()"></P>
+</CENTER>
+<% End If %>
+</FORM>
+<!-------------画面終わり--------------------------->
+</BODY></HTML>

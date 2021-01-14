@@ -1,0 +1,121 @@
+03/12 17:44:47 --------Start 'TrnsDb'
+03/12 17:44:47 Socket Time Out '60'
+03/12 17:44:47 Interval '60'
+03/12 17:44:47 Socket Host ID '221.186.126.67'
+03/12 17:44:47 Socket Port No '3001'
+03/12 17:44:47 Send File Path is 'd:\inetpub\wwwroot\ija\Send'
+03/12 17:44:47 Do ilSocketConnect()
+03/12 17:44:47 Do slSocketClose()
+03/12 17:44:48 =====Do OnTimer Send File Check
+03/12 17:44:48 Find Send Files
+03/12 17:44:48 Not Find Send File
+03/12 17:45:49 =====Do OnTimer Send File Check
+03/12 17:45:49 Find Send Files
+03/12 17:45:49 Not Find Send File
+03/12 17:46:50 =====Do OnTimer Send File Check
+03/12 17:46:50 Find Send Files
+03/12 17:46:50 Not Find Send File
+03/12 17:47:51 =====Do OnTimer Send File Check
+03/12 17:47:51 Find Send Files
+03/12 17:47:51 Not Find Send File
+03/12 17:48:52 =====Do OnTimer Send File Check
+03/12 17:48:52 Find Send Files
+03/12 17:48:52 Not Find Send File
+03/12 17:49:53 =====Do OnTimer Send File Check
+03/12 17:49:53 Find Send Files
+03/12 17:49:53 Not Find Send File
+03/12 17:50:54 =====Do OnTimer Send File Check
+03/12 17:50:54 Find Send Files
+03/12 17:50:54 Not Find Send File
+03/12 17:51:55 =====Do OnTimer Send File Check
+03/12 17:51:55 Find Send Files
+03/12 17:51:55 Not Find Send File
+03/12 17:52:56 =====Do OnTimer Send File Check
+03/12 17:52:56 Find Send Files
+03/12 17:52:56 Not Find Send File
+03/12 17:53:57 =====Do OnTimer Send File Check
+03/12 17:53:57 Find Send Files
+03/12 17:53:57 Not Find Send File
+03/12 17:54:58 =====Do OnTimer Send File Check
+03/12 17:54:58 Find Send Files
+03/12 17:54:58 Not Find Send File
+03/12 17:55:59 =====Do OnTimer Send File Check
+03/12 17:55:59 Find Send Files
+03/12 17:55:59 Not Find Send File
+03/12 17:57:00 =====Do OnTimer Send File Check
+03/12 17:57:00 Find Send Files
+03/12 17:57:00 Not Find Send File
+03/12 17:58:01 =====Do OnTimer Send File Check
+03/12 17:58:01 Find Send Files
+03/12 17:58:01 Not Find Send File
+03/12 17:59:02 =====Do OnTimer Send File Check
+03/12 17:59:02 Find Send Files
+03/12 17:59:02 Not Find Send File
+03/12 18:00:03 =====Do OnTimer Send File Check
+03/12 18:00:03 Find Send Files
+03/12 18:00:03 Not Find Send File
+03/12 18:01:04 =====Do OnTimer Send File Check
+03/12 18:01:04 Find Send Files
+03/12 18:01:04 Not Find Send File
+03/12 18:02:05 =====Do OnTimer Send File Check
+03/12 18:02:05 Find Send Files
+03/12 18:02:05 Not Find Send File
+03/12 18:03:06 =====Do OnTimer Send File Check
+03/12 18:03:06 Find Send Files
+03/12 18:03:06 Not Find Send File
+03/12 18:04:07 =====Do OnTimer Send File Check
+03/12 18:04:07 Find Send Files
+03/12 18:04:07 Not Find Send File
+03/12 18:05:08 =====Do OnTimer Send File Check
+03/12 18:05:08 Find Send Files
+03/12 18:05:08 Not Find Send File
+03/12 18:06:09 =====Do OnTimer Send File Check
+03/12 18:06:09 Find Send Files
+03/12 18:06:09 Not Find Send File
+03/12 18:07:10 =====Do OnTimer Send File Check
+03/12 18:07:10 Find Send Files
+03/12 18:07:10 Not Find Send File
+03/12 18:08:11 =====Do OnTimer Send File Check
+03/12 18:08:11 Find Send Files
+03/12 18:08:11 Not Find Send File
+03/12 18:09:12 =====Do OnTimer Send File Check
+03/12 18:09:12 Find Send Files
+03/12 18:09:12 Not Find Send File
+03/12 18:10:13 =====Do OnTimer Send File Check
+03/12 18:10:13 Find Send Files
+03/12 18:10:13 Not Find Send File
+03/12 18:11:14 =====Do OnTimer Send File Check
+03/12 18:11:14 Find Send Files
+03/12 18:11:14 Select Send Files is '1'
+03/12 18:11:14 Open Send File is 'd:\inetpub\wwwroot\ija\Send\0312000002.snd'
+03/12 18:11:14 Do ilSocketConnect()
+03/12 18:11:14 [Send]20040312181016,2,EX04,,,,0,R,001001,,V2DS,0204,UXXU4323170,TYOXI6420,,200403121810,,,,,,,,,,,,,,
+03/12 18:11:14 [Recv]OK
+03/12 18:11:14 Send File Delete 'd:\inetpub\wwwroot\ija\Send\0312000002.snd'
+03/12 18:11:14 Do slSocketClose()
+03/12 18:12:15 =====Do OnTimer Send File Check
+03/12 18:12:15 Find Send Files
+03/12 18:12:15 Not Find Send File
+03/12 18:13:16 =====Do OnTimer Send File Check
+03/12 18:13:16 Find Send Files
+03/12 18:13:16 Not Find Send File
+03/12 18:14:17 =====Do OnTimer Send File Check
+03/12 18:14:17 Find Send Files
+03/12 18:14:17 Not Find Send File
+03/12 18:15:18 =====Do OnTimer Send File Check
+03/12 18:15:18 Find Send Files
+03/12 18:15:18 Not Find Send File
+03/12 18:16:19 =====Do OnTimer Send File Check
+03/12 18:16:19 Find Send Files
+03/12 18:16:19 Not Find Send File
+03/12 18:17:20 =====Do OnTimer Send File Check
+03/12 18:17:20 Find Send Files
+03/12 18:17:20 Not Find Send File
+03/12 18:18:21 =====Do OnTimer Send File Check
+03/12 18:18:21 Find Send Files
+03/12 18:18:21 Not Find Send File
+03/12 18:19:22 =====Do OnTimer Send File Check
+03/12 18:19:22 Find Send Files
+03/12 18:19:22 Not Find Send File
+03/12 18:19:43 Do slSocketClose()
+03/12 18:19:43 --------End 'TrnsDb'

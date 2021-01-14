@@ -1,0 +1,30 @@
+<SCRIPT LANGUAGE=VBScript RUNAT=Server>
+Sub Application_OnStart
+	'携帯電話用絶対パス(携帯では相対パスによるリダイレクトが出来ない為)
+	Application("URL_MOBILE") = "http://www.hits-h.com/ija/"
+End Sub
+
+Sub Session_OnStart
+'    any = Split(Request.ServerVariables("SCRIPT_NAME"),"/")
+'    pg = LCase(any(UBound(any)))
+'    If pg<>"index.asp" Then
+'        Response.Redirect "index.asp"
+'    End If
+End Sub
+
+Sub Session_OnEnd
+    ' File System Object の生成
+    Set fs=Server.CreateObject("Scripting.FileSystemobject")
+
+    ' 作業ファイルの取得
+    Dim strFileName
+    strFileName = Session.Contents("tempfile")
+    If strFileName<>"" Then
+        ' 作業ファイルのあるとき
+        strFileName="./temp/" & strFileName
+        ' 作業ファイルの削除
+        fs.DeleteFile Server.MapPath(strFileName)
+    End If
+'   Response.Redirect "./ent_user_logout.asp"
+End Sub
+</SCRIPT>

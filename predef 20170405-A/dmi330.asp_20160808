@@ -1,0 +1,252 @@
+<% @LANGUAGE = VBScript %>
+<%
+'_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
+'_/	SystemName	:Hits					_/
+'_/	FileName	:dmi330.asp				_/
+'_/	Function	:事前実搬入入力確認画面			_/
+'_/	Date		:2003/05/29				_/
+'_/	Code By		:SEIKO Electric.Co 大重			_/
+'_/	Modify		:C-002	2003/08/06	備考欄追加	_/
+'_/	Modify		:3th	2003/01/31	3次変更	_/
+'_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
+%>
+<% Option Explicit %>
+<%
+	'HTTPコンテンツタイプ設定
+	Response.ContentType = "text/html; charset=Shift_JIS"
+%>
+<!--#include File="Common.inc"-->
+<%
+'セッションの有効性をチェック
+  CheckLoginH
+
+'データを取得
+  dim CMPcd,Hmon,Hday
+  CMPcd = Array(Request("CMPcd0"),Request("CMPcd1"),Request("CMPcd2"),Request("CMPcd3"),Request("CMPcd4"))
+
+'表示文言生成
+'3th  If Request("Hmon") = 0 Then 
+'3th    Hmon = " "
+'3th  Else
+'3th    Hmon = Right("0"&Request("Hmon"),2)
+'3th  End If
+
+'3th  If Request("Hday") = 0 Then 
+'3th    Hday = " "
+'3th  Else
+'3th    Hday = Right("0"&Request("Hday"),2)
+'3th  End If
+
+  dim Mord,ret
+  Mord = Request("Mord")
+  If Mord=2 Then
+    ret = true
+  Else
+  'DB接続
+    dim ObjConn, ObjRS, StrSQL
+    ConnDBH ObjConn, ObjRS
+  'ヘッドIDのチェック
+    checkHdCd ObjConn, ObjRS, CMPcd, ret
+  'DB接続解除
+    DisConnDBH ObjConn, ObjRS
+  'エラートラップ解除
+    on error goto 0
+  End If
+  dim tmpstr
+  If Request("UpFlag") <> 5 Then
+    tmpstr=CMPcd(Request("UpFlag"))&"/"
+  Else
+    tmpstr="/"
+  End If
+  tmpstr=tmpstr&Request("HedId")&"/"&Hmon & Hday&"/"&Request("CONsize")&"/"&Request("CONtype") &_
+           "/"&Request("CONhite")&"/"&Request("CONsitu")&"/"&Request("CONtear")&"/"&Request("MrSk") &_
+           "/"&Request("SealNo")&"/"&Request("GrosW")&"/"&Request("Hfrom")&"/"&Request("TuSk")&"/"&Request("OH") &_
+           "/"&Request("OWL")&"/"&Request("OWR")&"/"&Request("OLF")&"/"&Request("OLA")
+  If ret Then
+    tmpstr=tmpstr&",入力内容の正誤:0(正しい)"
+  Else
+    tmpstr=tmpstr&",入力内容の正誤:1(誤り)"
+  End If
+'3th Change Start
+'  WriteLogH "b402", "実搬入事前情報入力","13",tmpstr
+  If Mord="0" Then
+    WriteLogH "b402", "実搬入事前情報入力","02",tmpstr
+  Else
+    WriteLogH "b402", "実搬入事前情報入力","13",tmpstr
+  End If
+'3th Cange End
+%>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML><HEAD>
+<LINK REL="stylesheet" TYPE="text/css" HREF="./style.css">
+<TITLE>実搬入情報入力(表示)</TITLE>
+<META content="text/html; charset=Shift_JIS" http-equiv=Content-Type>
+<SCRIPT src="./JS/Common.js"></SCRIPT>
+<SCRIPT language=JavaScript>
+<!--
+
+function setParam(target){
+  len = target.elements.length;
+  for (i=0; i<len-5; i++) target.elements[i].readOnly = true;
+  bgset(target);
+}
+
+//登録
+function GoEntry(){
+  target=document.dmi330F;
+  target.action="./dmi340.asp";
+  target.submit();
+}
+//戻る
+function GoBackT(){
+  target=document.dmi330F;
+  target.action="./dmi320.asp";
+  target.submit();
+}
+// -->
+</SCRIPT>
+
+<META content="MSHTML 5.00.2919.6307" name=GENERATOR></HEAD>
+<BODY leftMargin=0 topMargin=0 marginheight="0" marginwidth="0" onLoad="setParam(document.dmi330F)">
+<!-------------実搬入情報入力確認画面--------------------------->
+<FORM name="dmi330F" method="POST">
+<TABLE border=0 cellPadding=5 cellSpacing=0 width="100%">
+  <TR>
+    <TD colspan=2><B>実搬入情報入力確認</B></TD>
+    <TD colspan=2>
+<% If Mord<>"0" Then %>
+      <TABLE border=1 cellPadding=3 cellSpacing=0 align="right">
+          <TR bgcolor="#f0f0f0"><TD>作業番号</TD><TD><%=Request("SakuNo")%></TD></TR>
+      </TABLE>
+<% End If %>
+    </TD></TR>
+  <TR>
+    <TD><DIV class=bgb>コンテナＮｏ．</DIV></TD>
+    <TD><INPUT type=text name="CONnum" value="<%=Request("CONnum")%>"></TD>
+    <TD>
+        <DIV class=bgb>サイズ、タイプ、高さ、材質、テアウェイト</DIV></TD>
+    <TD><INPUT type=text name="CONsize" value="<%=Request("CONsize")%>" size=5>
+        <INPUT type=text name="CONtype" value="<%=Request("CONtype")%>" size=5>
+        <INPUT type=text name="CONhite" value="<%=Request("CONhite")%>" size=5>
+        <INPUT type=text name="CONsitu" value="<%=Request("CONsitu")%>" size=5>
+        <INPUT type=text name="CONtear" value="<%=Request("CONtear")%>" size=5>kg
+    </TD></TR>
+  <TR>
+    <TD><DIV class=bgb>ブッキングＮｏ．</DIV></TD>
+    <TD><INPUT type=text name="BookNo" value="<%=Request("BookNo")%>"></TD>
+    <TD><DIV class=bgb>丸関</DIV></TD>
+    <TD><INPUT type=text name="MrSk" value="<%=Request("MrSk")%>" size=5></TD></TR>
+  <TR>
+    <TD><BR><DIV class=bgb>会社コード</DIV></TD>
+    <TD>登録者<BR>
+        <INPUT type=text name="CMPcd0" value="<%=CMPcd(0)%>" size=7>
+        <INPUT type=text name="CMPcd1" value="<%=CMPcd(1)%>" size=5>
+        <INPUT type=text name="CMPcd2" value="<%=CMPcd(2)%>" size=5>
+        <INPUT type=text name="CMPcd3" value="<%=CMPcd(3)%>" size=5>
+        <INPUT type=text name="CMPcd4" value="<%=CMPcd(4)%>" size=5></TD>
+    <TD><DIV class=bgb>シールＮｏ．</DIV></TD>
+    <TD><INPUT type=text name="SealNo" value="<%=Request("SealNo")%>"></TD></TR>
+  <TR>
+    <TD><DIV class=bgb>ヘッドＩＤ</DIV></TD>
+    <TD><INPUT type=text name="HedId" value="<%=Request("HedId")%>"></TD>
+    <TD><DIV class=bgb>グロスウェイト</DIV></TD>
+    <TD><INPUT type=text name="GrosW" value="<%=Request("GrosW")%>" size=5>kg</TD></TR>
+  <TR>
+    <TD><DIV class=bgb>搬入先</DIV></TD>
+    <TD><INPUT type=text name="HTo" value="<%=Request("HTo")%>" size=30></TD>
+    <TD><DIV class=bgb>搬入元</DIV></TD>
+    <TD><INPUT type=text name="HFrom" value="<%=Request("Hfrom")%>" size=30></TD></TR>
+  <TR>
+    <TD><DIV class=bgb>搬入予定日</DIV></TD>
+    <TD><INPUT type=text name="Hmon" value="<%=Request("Hmon")%>" size=2>月
+        <INPUT type=text name="Hday" value="<%=Request("Hday")%>" size=2>日</TD>
+    <TD><DIV class=bgb>通関</DIV></TD>
+    <TD><INPUT type=text name="TuSk" value="<%=Request("TuSk")%>" size=5></TD></TR>
+  <TR>
+    <TD><DIV class=bgb>取扱船社</DIV></TD>
+    <TD><INPUT type=text name="ThkSya" value="<%=Request("ThkSya")%>" size=27></TD>
+    <TD><DIV class=bgb>ＲＨＯ</DIV></TD>
+    <TD><INPUT type=text name="RHO" value="<%=Request("RHO")%>" size=5></TD></TR>
+  <TR>
+    <TD><DIV class=bgb>本船名</DIV></TD>
+    <TD><INPUT type=text name="ShipN" value="<%=Request("ShipN")%>"></TD>
+    <TD><DIV class=bgb>設定温度</DIV></TD>
+    <TD><INPUT type=text name="SttiT" value="<%=Request("SttiT")%>" size=5></TD></TR>
+  <TR>
+    <TD><DIV class=bgb>次航</DIV></TD>
+    <TD><INPUT type=text name="NextV" value="<%=Request("NextV")%>"></TD>
+    <TD><DIV class=bgb>ＶＥＮＴ</DIV></TD>
+    <TD><INPUT type=text name="VENT" value="<%=Request("VENT")%>" size=5></TD></TR>
+  <TR>
+    <TD><DIV class=bgb>荷受地</DIV></TD>
+    <TD><INPUT type=text name="NiukP" value="<%=Request("NiukP")%>"></TD>
+    <TD><DIV class=bgb>ＩＭＤＧ１、ＩＭＤＧ２、ＩＭＤＧ３</DIV></TD>
+    <TD><INPUT type=text name="IMDG1" value="<%=Request("IMDG1")%>" size=5>
+        <INPUT type=text name="IMDG2" value="<%=Request("IMDG2")%>" size=5>
+        <INPUT type=text name="IMDG3" value="<%=Request("IMDG3")%>" size=5></TD></TR>
+  <TR>
+    <TD><DIV class=bgb>積港</DIV></TD>
+    <TD><INPUT type=text name="TumiP" value="<%=Request("TumiP")%>"></TD>
+    <TD><DIV class=bgb>ＵＮ Ｎｏ.１、ＵＮ Ｎｏ.２、ＵＮ Ｎｏ.３</DIV></TD>
+    <TD><INPUT type=text name="UNNo1" value="<%=Request("UNNo1")%>" size=6>
+        <INPUT type=text name="UNNo2" value="<%=Request("UNNo2")%>" size=6>
+        <INPUT type=text name="UNNo3" value="<%=Request("UNNo3")%>" size=6></TD></TR>
+  <TR>
+    <TD><DIV class=bgb>揚港</DIV></TD>
+    <TD><INPUT type=text name="AgeP" value="<%=Request("AgeP")%>"></TD>
+    <TD><DIV class=bgb>Ｏ/Ｈ、Ｏ/ＷＬ、Ｏ/ＷＲ、Ｏ/ＬＦ、Ｏ/ＬＡ</DIV></TD>
+    <TD><INPUT type=text name="OH"  value="<%=Request("OH")%>"  size=5>
+        <INPUT type=text name="OWL" value="<%=Request("OWL")%>" size=5>
+        <INPUT type=text name="OWR" value="<%=Request("OWR")%>" size=5>
+        <INPUT type=text name="OLF" value="<%=Request("OLF")%>" size=5>
+        <INPUT type=text name="OLA" value="<%=Request("OLA")%>" size=5></TD></TR>
+  <TR>
+    <TD><DIV class=bgb>荷渡地</DIV></TD>
+    <TD><INPUT type=text name="NiwataP" value="<%=Request("NiwataP")%>"></TD>
+    <TD><DIV class=bgb>オペレータ</DIV></TD>
+    <TD><INPUT type=text name="Operator" value="<%=Request("Operator")%>"></TD></TR>
+  <TR>
+    <TD><DIV class=bgb>備考１</DIV></TD>
+    <TD colspan=3><INPUT type=text name="Comment1" value="<%=Request("Comment1")%>" size=73></TD></TR>
+  <TR>
+    <TD><DIV class=bgb>備考２</DIV></TD>
+    <TD colspan=3><INPUT type=text name="Comment2" value="<%=Request("Comment2")%>" size=73></TD></TR>
+  <TR>
+    <TD><DIV class=bgb>備考３</DIV></TD>
+    <TD colspan=3><INPUT type=text name="Comment3" value="<%=Request("Comment3")%>" size=73></TD></TR>
+  <TR>
+<!-- 2009/03/10 R.Shibuta Add-S -->
+  <TR>
+   <TD><DIV class=bgy>登録担当者</DIV></TD>
+   <TD><INPUT type=text name="TruckerSubName" value="<%=Request("TruckerSubName")%>"  maxlength=16></TD>
+<!-- 2009/03/10 R.Shibuta Add-E -->
+  </TR>
+
+    <TD colspan=4 align=center valign=bottom>
+<% If Mord=1 AND Request("UpFlag")<>1 Then %>
+    <DIV class=bgw>指示元への回答　　　Yes　　　　　</DIV><P>
+<% ElseIf Mord =2 Then %>
+    <DIV class=bgw>指示元への回答　　　No　　　　　</DIV><P>
+    <DIV class=alert><B>＜注意＞</B>回答をNoで指定の場合は入力したデータは反映されません。</DIV><P>
+<% End If %>
+       <INPUT type=hidden name="SakuNo"   value="<%=Request("SakuNo")%>">
+       <INPUT type=hidden name="UpFlag"   value="<%=Request("UpFlag")%>">
+       <INPUT type=hidden name="compFlag" value="<%=Request("compFlag")%>">
+       <INPUT type=hidden name="Mord"     value="<%=Mord%>"><%'CW-028 ADD%>
+       <INPUT type=hidden name="WkCNo"    value="<%=Request("WkCNo")%>" >
+       <INPUT type=hidden name="partFlg"  value="<%=Request("partFlg")%>" >
+       <INPUT type=hidden name="TruckerFlag" value="<%=Request("TruckerFlag")%>" >
+<% If Not ret Then %>
+       <P><DIV class=alert>
+        指定された会社コードは存在しません。<BR>
+       「戻る」ボタンを押下し、再入力してください。
+       </DIV></P>
+<% Else %>
+       <INPUT type=button value="ＯＫ" onClick="GoEntry()">
+<% End If %>
+       <INPUT type=button value="戻る" onClick="GoBackT()">
+      </TD></TR>
+</TABLE>
+</FORM>
+<!-------------画面終わり--------------------------->
+</BODY></HTML>

@@ -1,0 +1,86 @@
+'_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
+'_/	SystemName	:Hits					_/
+'_/	FileName	:ReadMy					_/
+'_/	Function	:事前情報				_/
+'_/	Date		:2003/07/15				_/
+'_/	Code By		:SEIKO Electric.Co 大重			_/
+'_/	Modify		:03/07/23：#	:dmo030.asp追加		_/
+'_/			:03/08/05：#	:CSV出力処理追加	_/
+'_/			:04/01/31：#3th	:3次対応		_/
+'_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
+
+
+場所：既存のページのあるディレクトリにpredefディレクトリを追加してください
+遷移先のトップ：dmi000F.asp
+DB接続設定：Common.incの5～8行目で環境に合わせて設定
+
+
+ファイル一覧
+共通	ASP関数群		Common.inc
+	エラー画面		errer.asp
+	ジャバスクリプト関数群	\JS\Common.js
+	画像ファイル      	\Image\*.gif
+	初期画面フッタ		dmi000B.asp
+	初期画面フレーム	dmi000F.asp
+	初期画面メニュー	dmi000M.asp
+	初期画面ヘッダ		dmi000T.asp
+	輸入コンテナ画面接続	dmo900.asp
+	輸入コンテナ詳細画面接続dmo910.asp
+	輸入コンテナ一覧画面接続dmo920.asp
+	輸出コンテナ画面接続	dmo930.asp
+実搬出	コンテナ/BL入力		dmi010.asp
+	データ検索		dmi015.asp
+	一覧選択		dmi020.asp
+	データ入力		dmi021.asp
+	データ確認		dmi030.asp
+	登録・更新		dmi040.asp
+	削除			dmi090.asp
+	一覧表示画面フッタ	dmo010B.asp
+	一覧表示画面フレーム	dmo010F.asp
+	一覧表示画面リスト	dmo010L.asp
+	一覧表示画面ヘッダ	dmo010T.asp
+	データ表示(更新時)	dmo020.asp
+	データ点展開表示	dmo030.asp
+	CSVファイル出力		dmo080.asp
+	指示書印刷調整		dmo091.asp	'3th Add
+	指示書印刷		dmo092.asp	'3th Add
+空搬入	コンテナ番号入力	dmi110.asp
+	データ検索		dmi115.asp
+	データ入力		dmi120.asp
+	データ確認		dmi130.asp
+	登録・更新		dmi140.asp
+	削除			dmi190.asp
+	一覧表示画面フッタ	dmo110B.asp
+	一覧表示画面フレーム	dmo110F.asp
+	一覧表示画面リスト	dmo110L.asp
+	一覧表示画面ヘッダ	dmo110T.asp
+	データ表示(更新時)	dmo120.asp
+	CSVファイル出力		dmo180.asp
+空搬出	ブッキング番号入力	dmi210.asp
+	データ取得		dmi215.asp	'3th Add
+	データ入力		dmi220.asp
+	データ確認		dmi230.asp
+	登録・更新		dmi240.asp
+	削除			dmi290.asp
+	一覧表示画面フッタ	dmo210B.asp
+	一覧表示画面フレーム	dmo210F.asp
+	一覧表示画面リスト	dmo210L.asp
+	一覧表示画面ヘッダ	dmo210T.asp
+	データ表示(更新時)	dmo220.asp
+	CSVファイル出力		dmo280.asp
+	指示書印刷調整		dmo291.asp	'3th Add
+	指示書印刷		dmo292.asp	'3th Add
+//	CSVファイル指定		dmi810.asp	'3th Del
+//	CSVファイル登録		dmi820.asp	'3th Del
+実搬入	ContNo/BookingNo入力	dmi310.asp	'3th Add
+	データ取得		dmi315.asp	'3th Add
+	データ入力		dmi320.asp
+	データ確認		dmi330.asp
+	登録・更新		dmi340.asp
+	削除			dmi390.asp
+	一覧表示画面フッタ	dmo310B.asp
+	一覧表示画面フレーム	dmo310F.asp
+	一覧表示画面リスト	dmo310L.asp
+	一覧表示画面ヘッダ	dmo310T.asp
+	データ表示(更新時)	dmo320.asp
+	CSVファイル出力		dmo380.asp

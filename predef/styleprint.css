@@ -1,0 +1,11 @@
+BODY{
+ background:#dee1ff;
+ color:#000000;
+}
+A:link{color:#3300ff}
+B.titleB{
+ font-size: larger;
+ text-decoration:underline
+}
+DIV.right{text-align:right;}
+

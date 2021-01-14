@@ -1,0 +1,573 @@
+<% @LANGUAGE = VBScript %>
+<%
+'_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
+'_/	SystemName	:Hits					_/
+'_/	FileName	:dmo210L.asp				_/
+'_/	Function	:空搬出情報一覧画面リスト出力		_/
+'_/	Date		:2003/05/28				_/
+'_/	Code By		:SEIKO Electric.Co 大重			_/
+'_/	Modify		:C-001 2003/08/06	CSV出力対応	_/
+'_/			:C-002 2003/08/06	備考欄対応	_/
+'_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
+%>
+<% Option Explicit %>
+<%
+	'HTTPコンテンツタイプ設定
+	Response.ContentType = "text/html; charset=Shift_JIS"
+%>
+<!--#include File="Common.inc"-->
+<%
+'セッションの有効性をチェック
+  CheckLoginH
+'  Session.Contents.Remove("DateP")
+'  Session.Contents.Remove("NumP")
+
+'ユーザデータ所得
+  dim USER, COMPcd
+  USER   = UCase(Session.Contents("userid"))
+  COMPcd = Session.Contents("COMPcd")
+
+'INIファイルより設定値を取得
+  dim param(2),calcDate2
+  getIni param
+  calcDate2 = DateAdd("d", "-"&param(2), Date)
+
+'データ取得
+  dim Num, DtTbl,i,j,SortFlag,SortKye,ResA
+
+  If Request("SortFlag") = "" Then
+    SortFlag = 0
+  Else
+    SortFlag = Request("SortFlag")
+  End If
+  ResA=Array("　","Yes","No","未")
+  'ソートケース
+  dim strWrer
+  Select Case SortFlag
+      Case "0" '初期表示:入力日順に表示
+        WriteLogH "b301", "空搬出事前情報一覧","01",""
+        strWrer="AND DateDiff(day,SPB.InputDate,'"&calcDate2&"')<=0 "
+'3th        getData DtTbl,strWrer
+        getData DtTbl,strWrer,0
+      Case "1" '指示先が未照会のコンテナ一覧
+        WriteLogH "b301", "空搬出事前情報一覧","03",""
+        strWrer="AND DateDiff(day,SPB.InputDate,'"&calcDate2&"')<=0 "
+'3th        getData DtTbl,strWrer
+        getData DtTbl,strWrer,1
+'3th        j=1
+'3th        DtTbl(0)(6)=0
+'3th        For i=1 To Num
+'3th         If DtTbl(i)(5) = "未" Then
+'3th            DtTbl(j)=DtTbl(i)
+'3th            DtTbl(0)(6)=DtTbl(0)(6)+DtTbl(j)(6)
+'3th            j=j+1
+'3th          End If
+'3th        Next
+'3th        Num=j-1
+      Case "7" '指示先が未照会のコンテナ一覧
+        WriteLogH "b301", "空搬出事前情報一覧","07",""
+        strWrer="AND DateDiff(day,SPB.InputDate,'"&calcDate2&"')<=0 "
+'3th        getData DtTbl,strWrer
+        getData DtTbl,strWrer,2
+'3th        j=1
+'3th        DtTbl(0)(6)=0
+'3th        For i=1 To Num
+'3th         If DtTbl(i)(5) = "No" Then
+'3th            DtTbl(j)=DtTbl(i)
+'3th            DtTbl(0)(6)=DtTbl(0)(6)+DtTbl(j)(6)
+'3th            j=j+1
+'3th          End If
+'3th        Next
+'3th        Num=j-1
+      Case "2" '搬入未完了分をすべて表示
+        WriteLogH "b201", "空搬入事前情報一覧","02",""
+        strWrer=" "
+'3th        getData DtTbl,strWrer
+        getData DtTbl,strWrer,0
+        j=1
+        DtTbl(0)(6)=0
+        For i=1 To Num
+         If DtTbl(i)(7) = "0" Then
+            DtTbl(j)=DtTbl(i)
+            DtTbl(0)(6)=DtTbl(0)(6)+DtTbl(j)(6)
+            j=j+1
+          End If
+        Next
+        Num=j-1
+      Case "3" '全件表示
+        WriteLogH "b301", "空搬出事前情報一覧","04",""
+        strWrer=" "
+'3th        getData DtTbl,strWrer
+        getData DtTbl,strWrer,0
+      Case "4" 'ブッキング番号で検索
+          SortKye=Request("SortKye")
+          WriteLogH "b301", "空搬出事前情報一覧","11",SortKye
+'          If Session.Contents("ConNum") = "" Then
+'            jampErrerP "0","b301","11","空搬出：一覧検索","001",""
+'          Else
+'            DtTbl=Session("DateT")
+'            Num  =Session.Contents("ConNum")
+'          End If
+'3th chage          Get_Data Num,DtTbl
+          strWrer = "AND SPB.BookNo LIKE '%" & SortKye & "'"
+          getData DtTbl,strWrer,0
+'3th          j=1
+'3th          DtTbl(0)(6)=0
+'3th          For i=1 To Num
+'3th            If Right(DtTbl(i)(2),Len(SortKye))= SortKye Then
+'3th              DtTbl(j)=DtTbl(i)
+'3th              DtTbl(0)(6)=DtTbl(0)(6)+DtTbl(j)(6)
+'3th              j=j+1
+'3th            End If
+'3th          Next
+'3th          Num=j-1
+      Case "8" '照会済
+          WriteLogH "b307", "空搬出事前情報照会","01",""
+'          If Session.Contents("ConNum") = "" Then
+'            jampErrerP "0","b307","01","空搬出：一覧照会","001",""
+'          Else
+'            DtTbl=Session("DateT")
+'            Num  =Session.Contents("ConNum")
+'          End If
+          Get_Data Num,DtTbl
+        'エラートラップ開始
+          on error resume next
+        'DB接続
+          dim ObjConn, ObjRS, StrSQL
+          ConnDBH ObjConn, ObjRS
+          For i=1 To Num
+'CW-002            If DtTbl(i)(5) = "　" Then
+            If DtTbl(i)(5) = "　" AND DtTbl(i)(6)=3 AND DtTbl(i)(7)=0 Then
+              StrSQL = "UPDATE BookingAssign SET UpdtTime='"& Now() &"', UpdtPgCd='PREDEF01', "&_
+                       "UpdtTmnl='"& USER &"', TruckerFlag='1' "&_
+                       "WHERE BookNo='"& DtTbl(i)(2) &"' AND SenderCode='"& DtTbl(i)(1) &"' "&_
+                       "AND TruckerCode='"& DtTbl(i)(12) &"' AND Process='R' "
+'3th Change SPBookInfo -> BookingAssign
+'3th Dell Status='0', 
+'3th TruckerCode='"& DtTbl(i)(12) &"'
+              ObjConn.Execute(StrSQL)
+              if err <> 0 then
+                Set ObjRS = Nothing
+                jampErrerPDB ObjConn,"2","b307","01","空搬出：一覧照会","104","SQL:<BR>"&strSQL
+              end if
+              DtTbl(i)(6)=1
+            End If
+          Next
+        'DB接続解除
+          DisConnDBH ObjConn, ObjRS
+        'エラートラップ解除
+          on error goto 0
+  End Select
+'  Session.Contents.Remove("DateT")
+'  Session("DateT")=DtTbl
+'  Session.Contents("ConNum")=Num
+'  If Num=0 Then
+'    Session.Contents("NullFlag")=0
+'  Else
+'    Session.Contents("NullFlag")=1
+'  End If
+
+'データ取得関数
+'3th Function getData(DtTbl,strWrer)
+Function getData(DtTbl,strWrer,DelType)
+  ReDim DtTbl(1)
+'CW-002  DtTbl(0)=Array("入力日","指示元","ブッキング番号","ピック済本数","指示先","指示先照会")
+'CW-003  DtTbl(0)=Array("入力日","指示元","ブッキング番号","ピック済本数","指示先","指示先照会","照会フラグ")
+'C-002  DtTbl(0)=Array("入力日","指示元","ブッキング番号","ピック済本数","指示先","指示先回答","照会フラグ","作業完了F","船社","船名","指示元表示用")
+'3th DtTbl(0)=Array("入力日","指示元","ブッキング番号","ピック済本数","指示先","指示先回答","照会フラグ","作業完了F","船社","船名","指示元表示用","備考１")
+'Chang 20050303 STAT fro Fourth Recon By SEIKO N.Oosige
+'  DtTbl(0)=Array("入力日","指示元","ブッキング番号","ピック済本数","指示先","指示先回答","照会フラグ","作業完了F","船社","船名","指示元表示用","備考１","指示先データ","備考２","サイズ","タイプ","高さ","材質")
+  DtTbl(0)=Array("入力日","指示元","ブッキング番号","ピック<BR>済","指示先","指示先<BR>回答","照会フラグ","作業完了F","船社","船名","指示元表示用","備考１","指示先データ","備考２","サイズ","タイプ","高さ","材質")
+'Chang 20050303 END
+  DtTbl(0)(6)=0
+'3th Add Start
+  Dim DelStr,DelTarget
+  DelStr=Array("","未","No")
+  DelTarget=Array(0,5,5)
+'3th Add End
+
+  'エラートラップ開始
+    on error resume next
+  'DB接続
+    dim ObjConn, ObjRS, StrSQL
+    ConnDBH ObjConn, ObjRS
+
+  '対象件数取得
+    StrSQL = "SELECT count(SPB.BookNo) AS num FROM BookingAssign AS SPB "&_
+             "WHERE (SPB.SenderCode='"& USER &"' OR SPB.TruckerCode='"& COMPcd &"') AND SPB.Process='R' "&_
+             strWrer
+'3th Change SPBookInfo -> BookingAssign
+    ObjRS.Open StrSQL, ObjConn
+    if err <> 0 then
+      DisConnDBH ObjConn, ObjRS	'DB切断
+      jampErrerP "2","b301","01","空搬出：一覧データ取得","101","SQL:<BR>"&strSQL
+      Exit Function
+    end if
+    Num = ObjRS("num")
+    ObjRS.close
+    ReDim Preserve DtTbl(Num)
+'3th ADD Start
+    If Num>0 Then
+'ADD 20050228 Fro survive ViewBookAssing ViewTable By SEIKO N.Oosige
+      StrSQL = "IF (EXISTS( select * from ViewBookAssing ) ) BEGIN DROP VIEW ViewBookAssing END "
+      ObjConn.Execute(StrSQL)
+      if err <> 0 then
+        err.Clear
+      end if
+      
+      StrSQL = "BEGIN TRAN TRAN1 "
+      ObjConn.Execute(StrSQL)
+      if err <> 0 then
+        Set ObjRS = Nothing
+        jampErrerP "2","b301","01","空搬出：一覧データ取得","101","SQL:<BR>"&strSQL
+      end if
+'ADD 20050228 End
+      
+      StrSQL = "CREATE VIEW ViewBookAssing AS SELECT Max(InputDate) AS MAXDATE,BookNo "&_
+               "FROM BookingAssign GROUP BY BookNo,Process "&_
+               "HAVING Process='R'"
+'CW-319 ADD HAVING Process='R'
+      ObjConn.Execute(StrSQL)
+      if err <> 0 then
+        Set ObjRS = Nothing
+        jampErrerP "2","b301","01","空搬出：一覧データ取得","101","SQL:<BR>"&strSQL
+      end if
+'3th ADD END
+
+  'データ取得
+'CW-003    StrSQL = "SELECT BookNo, SenderCode, InputDate, TruckerCode, TruckerFlag "&_
+'CW-003             "FROM SPBookInfo "&_
+'CW-003             "WHERE (SenderCode='"& USER &"' OR TruckerCode='"& COMPcd &"') AND Process='R' "&_
+'CW-003             strWrer &_
+'CW-003             "ORDER BY InputDate ASC"
+'CW-012    StrSQL = "SELECT Pickup.Qty, SPB.BookNo, SPB.SenderCode, SPB.InputDate, SPB.TruckerCode, SPB.TruckerFlag "&_
+'CW-012             "FROM SPBookInfo AS SPB LEFT JOIN Pickup ON SPB.BookNo = Pickup.BookNo "&_
+'CW-012             "WHERE (SPB.SenderCode='"& USER &"' OR SPB.TruckerCode='"& COMPcd &"') AND SPB.Process='R' "&_
+'CW-012              strWrer &_
+'CW-012             "ORDER BY SPB.InputDate"
+'    StrSQL = "SELECT MAX(Pic.Qty), SPB.BookNo, SPB.SenderCode, SPB.InputDate, SPB.TruckerCode, SPB.TruckerFlag, "&_
+'             "mV.ShipLine, mV.FullName,mU.HeadCompanyCode, mU.UserType "&_
+'             "FROM (((SPBookInfo AS SPB LEFT JOIN ExportCont AS EXC ON SPB.BookNo = EXC.BookNo) "&_
+'             "LEFT JOIN Pickup AS Pic ON (EXC.BookNo = Pic.BookNo) AND (EXC.VoyCtrl = Pic.VoyCtrl) "&_
+'             "AND (EXC.VslCode = Pic.VslCode)) "&_
+'             "LEFT JOIN mVessel AS mV ON EXC.VslCode = mV.VslCode) "&_
+'             "LEFT JOIN mUsers AS mU ON SPB.SenderCode = mU.UserCode "&_
+'             "WHERE (SPB.SenderCode='"& USER &"' OR SPB.TruckerCode='"& COMPcd &"') AND SPB.Process='R' "&_
+'              strWrer &_
+'             "ORDER BY SPB.InputDate "
+'CW-051 ADD This Line "mU.HeadCompanyCode, mU.UserType "&_
+'CW-051 ADD This Line "INNER JOIN mUsers AS mU ON SPB.SenderCode = mU.UserCode "&_
+      StrSQL = "SELECT SPB.BookNo, SPB.SenderCode, SPB.InputDate, SPB.TruckerCode, SPB.TruckerFlag, "&_
+               "SPB.ContSize1,SPB.ContType1,SPB.ContHeight1,SPB.ContMaterial1, "&_
+               "SPB.Comment1,SPB.Comment2, mU.HeadCompanyCode, mU.UserType "&_
+               "FROM BookingAssign AS SPB LEFT JOIN mUsers AS mU ON SPB.SenderCode = mU.UserCode "&_
+               "LEFT JOIN ViewBookAssing AS VBA ON SPB.BookNO=VBA.BookNo "&_
+               "WHERE (SPB.SenderCode='"& USER &"' OR SPB.TruckerCode='"& COMPcd &"') AND SPB.Process='R' "&_
+                strWrer &_
+               "ORDER BY VBA.MAXDATE DESC,SPB.InputDate DESC, SPB.BookNo ASC"
+'C-002 ADD This Item : SPB.Comment
+'20030910 chage "ORDER BY SPB.InputDate ASC"->"ORDER BY SPB.InputDate DESC"
+'3th Change SPBookInfo -> BookingAssign
+'3th Change Comment -> Comment1,Comment2
+'3th ADD SPB.ContSize1,SPB.ContType1,SPB.ContHeight1,
+'3th ADD Line LEFT JOIN ViewBookAssing AS VBA ON SPB.BookNO=VBA.BookNo "&_
+'3th ADD VBA.MAXDATE DESC and SPB.BookNo ASC
+      ObjRS.Open StrSQL, ObjConn
+      if err <> 0 then
+        DisConnDBH ObjConn, ObjRS	'DB切断
+          jampErrerP "2","b301","01","空搬出：一覧データ取得","102","SQL:<BR>"&strSQL
+        Exit Function
+      end if
+      dim tmpBookingNo
+      tmpBookingNo=""
+      i=1
+
+      Do Until ObjRS.EOF
+'CW-002      DtTbl(i)=Array("","","","","","")
+'CW-003      DtTbl(i)=Array("","","","","","","")
+'C-002      DtTbl(i)=Array("","","","","","","","","","","")
+'3th      DtTbl(i)=Array("","","","","","","","","","","","")
+        DtTbl(i)=Array("","","","","","","","","","","","","","","","","","")
+        DtTbl(i)(0)=Mid(ObjRS("InPutDate"),3,8)
+        DtTbl(i)(1)=Trim(ObjRS("SenderCode"))
+        If ObjRS("UserType") = "5" Then			'CW-051
+          DtTbl(i)(10)=Trim(ObjRS("HeadCompanyCode"))	'CW-051
+        Else						'CW-051
+          DtTbl(i)(10)=Trim(ObjRS("SenderCode"))	'CW-051
+        End If						'CW-051
+        DtTbl(i)(2)=Trim(ObjRS("BookNo"))
+        DtTbl(i)(4)=Trim(ObjRS("TruckerCode"))
+        DtTbl(i)(12)=DtTbl(i)(4)
+        DtTbl(i)(6)=ObjRS("TruckerFlag")		'CW-002
+        If DtTbl(i)(1) <> USER AND DtTbl(i)(6)=0 Then
+          DtTbl(i)(6)=3
+        End If
+'        DtTbl(i)(8)=Trim(ObjRS("ShipLine"))
+'        DtTbl(i)(9)=Left(ObjRS("FullName"),12)
+        DtTbl(i)(8)=""
+        DtTbl(i)(9)=""
+        DtTbl(i)(14)=Trim(ObjRS("ContSize1"))
+        DtTbl(i)(15)=Trim(ObjRS("ContType1"))
+        DtTbl(i)(16)=Trim(ObjRS("ContHeight1"))
+        DtTbl(i)(17)=Trim(ObjRS("ContMaterial1"))
+        If DtTbl(i)(1) = USER AND DtTbl(i)(4)<>COMPcd AND DtTbl(i)(4)<>""  Then
+        '指示先照会済みフラグ
+          If ObjRS("TruckerFlag")=0 Then
+            DtTbl(i)(5) = "未"
+          ElseIf ObjRS("TruckerFlag")=1 Then
+            DtTbl(i)(5) = "Yes"
+          Else
+            DtTbl(i)(5) = "No"
+          End If
+          DtTbl(i)(6) = 0
+        Else
+          DtTbl(i)(4) = "　"
+          DtTbl(i)(5) = "　"
+        End If
+      
+'3th      DtTbl(0)(6)=DtTbl(0)(6)+DtTbl(i)(6)
+'      DtTbl(i)(7)=Trim(ObjRS("Qty"))		'CW-003
+'      If IsNull(DtTbl(i)(7)) Then		'CW-003
+'        DtTbl(i)(7)=0				'CW-003
+'      End If					'CW-003
+        DtTbl(i)(7)=0
+        DtTbl(i)(3)=0
+'3th      DtTbl(i)(11)=ObjRS("Comment")	'C-002
+        DtTbl(i)(11)=ObjRS("Comment1")
+        DtTbl(i)(13)=ObjRS("Comment2")
+        If DtTbl(i)(2)<>DtTbl(i-1)(2) Then
+          tmpBookingNo=tmpBookingNo&",'"&DtTbl(i)(2)&"'"
+        End If
+'3th Add Start
+        If DelType=0 OR DtTbl(i)(DelTarget(DelType)) = DelStr(DelType) Then
+          DtTbl(0)(6) = DtTbl(0)(6) + DtTbl(i)(6)
+          i=i+1
+        Else
+          Num=Num-1
+        End If
+'      i=i+1
+'3th Add End
+        ObjRS.MoveNext
+      Loop
+      ObjRS.close
+      if err <> 0 then
+        DisConnDBH ObjConn, ObjRS	'DB切断
+          jampErrerP "2","b301","01","空搬出：一覧データ取得","200",""
+        Exit Function
+      end if
+'3th ADD Start
+'Change 20050228 Fro survive ViewBookAssing ViewTable By SEIKO N.Oosige
+'      StrSQL = "DROP VIEW ViewBookAssing"
+      StrSQL = "COMMIT TRAN TRAN1 "
+'Change 20050228 End
+      ObjConn.Execute(StrSQL)
+      if err <> 0 then
+        Set ObjRS = Nothing
+        jampErrerP "2","b301","01","空搬出：一覧データ取得","101","SQL:<BR>"&strSQL
+      end if
+'3th ADD END
+      'ピック済み本数取得
+      If tmpBookingNo <> "" Then
+        StrSQL = "SELECT  EXC.BookNo,sum(ISDATE(EXC.EmpDelTime)) AS numC, mV.FullName, mV.ShipLine,ISNULL(Pic.Qty,0) AS Qty "&_
+                 "FROM ExportCont AS EXC LEFT JOIN mVessel AS mV ON EXC.VslCode = mV.VslCode "&_
+                 "LEFT JOIN Container AS Con ON EXC.ContNo=Con.ContNo AND EXC.VoyCtrl=Con.VoyCtrl AND EXC.VslCode=Con.VslCode "&_
+                 "LEFT JOIN Pickup AS Pic ON (EXC.BookNo = Pic.BookNo) AND (EXC.VoyCtrl = Pic.VoyCtrl) AND (EXC.PickPlace=Pic.PickPlace) "&_
+                 "AND (EXC.VslCode = Pic.VslCode) AND (CON.ContSize=Pic.ContSize) AND (CON.ContType=Pic.ContType) AND (CON.ContHeight=Pic.ContHeight) "&_
+                 "WHERE EXC.BookNo IN("& Mid(tmpBookingNo,2) &") "&_
+                 "Group By EXC.BookNo, mV.FullName, mV.ShipLine,Pic.Qty "&_
+                 "Order By EXC.BookNo ASC "
+        ObjRS.Open StrSQL, ObjConn
+        if err <> 0 then
+          DisConnDBH ObjConn, ObjRS	'DB切断
+            jampErrerP "2","b301","01","空搬出：一覧データ取得","102","SQL:<BR>"&strSQL
+          Exit Function
+        end if
+        redim tmpBookingNo(Num)
+        tmpBookingNo(0)= Array("",0,"","",0)
+        i=1
+        tmpBookingNo(1)= Array("",0,"","",0)
+        Do Until ObjRS.EOF
+          If tmpBookingNo(i-1)(0)=Trim(ObjRS("BookNo")) Then
+            tmpBookingNo(i-1)(1)=tmpBookingNo(i-1)(1)+ObjRS("numC")
+            tmpBookingNo(i-1)(4)=tmpBookingNo(i-1)(4)+ObjRS("Qty")
+          Else
+            tmpBookingNo(i)(0)=Trim(ObjRS("BookNo"))
+            tmpBookingNo(i)(1)=ObjRS("numC")
+            tmpBookingNo(i)(2)=Trim(ObjRS("ShipLine"))
+            tmpBookingNo(i)(3)=Trim(ObjRS("FullName"))
+            tmpBookingNo(i)(4)=ObjRS("Qty")
+            i=i+1
+            tmpBookingNo(i)= Array("",0,"","",0)
+          End If
+          ObjRS.MoveNext
+        Loop
+        tmpBookingNo(0)(1)=i-1
+        ObjRS.close
+        For i=1 To Num
+          For j=1 To tmpBookingNo(0)(1)
+            If DtTbl(i)(2) = tmpBookingNo(j)(0) Then
+              DtTbl(i)(3) = tmpBookingNo(j)(1)
+              DtTbl(i)(8) = tmpBookingNo(j)(2)
+              DtTbl(i)(9) = tmpBookingNo(j)(3)
+              If tmpBookingNo(j)(1)=tmpBookingNo(j)(4) Then
+                DtTbl(i)(7) = tmpBookingNo(j)(4)
+              End If
+            End If
+          Next
+        Next
+      End If
+'      For i=1 To Num
+'        StrSQL = "SELECT Count(BookNo) AS numC FROM ExportCont "&_
+'                 "WHERE BookNo='"& DtTbl(i)(2) &"' AND EmpDelTime IS NOT NULL"
+'        ObjRS.Open StrSQL, ObjConn
+'        if err <> 0 then
+'          DisConnDBH ObjConn, ObjRS	'DB切断
+'          jampErrerP "2","b301","01","空搬出：一覧データ取得","101","SQL:<BR>"&strSQL
+'          Exit Function
+'        end if
+'        DtTbl(i)(3) = ObjRS("numC")
+'CW-020      If DtTbl(i)(7)<>"0" AND DtTbl(i)(7)<>DtTbl(i)(3) Then	'CW-003
+'        If DtTbl(i)(7)<>"0" AND CInt(DtTbl(i)(7))<>CInt(DtTbl(i)(3)) Then	'CW-020
+'          DtTbl(i)(7)=0						'CW-003
+'        End If							'CW-003
+'        ObjRS.close
+'      Next
+  End If		'If Num>0    3th ADD
+  'DB接続解除
+    DisConnDBH ObjConn, ObjRS
+  'エラートラップ解除
+    on error goto 0
+End Function
+
+%>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML><HEAD>
+<LINK REL="stylesheet" TYPE="text/css" HREF="./style.css">
+<TITLE>空搬入情報一覧</TITLE>
+<META content="text/html; charset=Shift_JIS" http-equiv=Content-Type>
+<SCRIPT src="./JS/Common.js"></SCRIPT>
+<SCRIPT language=JavaScript>
+<!--
+function vew(){
+}
+//更新
+function GoRenew(bookNo,compF,SijiM,SijiC){
+  Fname=document.dmo210F;
+  Fname.BookNo.value=bookNo;
+  Fname.CompF.value=compF;
+  Fname.COMPcd0.value=SijiM;
+  Fname.COMPcd1.value=SijiC;
+  Fname.action="./dmi215.asp";
+  newWin = window.open("", "ReEntry", "status=yes,width=500,height=500,left=10,top=10,resizable=yes");
+  Fname.target="ReEntry";
+  Fname.submit();
+}
+//検索
+function SerchC(SortFlag,Kye){
+  Fname=document.dmo210F;
+  Fname.SortFlag.value=SortFlag;
+  Fname.SortKye.value=Kye;
+  Fname.target="_self";
+  Fname.action="./dmo210L.asp";
+  Fname.submit();
+}
+//照会済
+function GoSyokaizumi(){
+  target=document.dmo210F;
+  if(target.DataNum.value>0){
+    flag = confirm('未回答の回答を「Yes」にしますか？');
+    if(flag==true){
+      target.SortFlag.value=8;
+      target.target="_self";
+      target.action="./dmo210L.asp";
+      len=target.elements.length;
+      for(i=0;i<len;i++){
+        target.elements[i].disabled=false;
+      }
+      target.submit();
+    }
+  }
+}
+//CSV		ADD C-001
+function GoCSV(){
+  target=document.dmo210F;
+  len=target.elements.length;
+  for(i=0;i<len;i++){
+    target.elements[i].disabled=false;
+  }
+//  target.target="Bottom";
+  target.action="./dmo280.asp";
+  target.submit();
+}
+// -->
+</SCRIPT>
+
+<META content="MSHTML 5.00.2919.6307" name=GENERATOR></HEAD>
+<BODY leftMargin=0 topMargin=0 marginheight="0" marginwidth="0" onLoad="vew()">
+<!-------------空搬出情報一覧画面List--------------------------->
+<Form name="dmo210F" method="POST">
+一覧に表示される属性（サイズ等）は登録時に先頭に入力されたもののみです。各データの詳細画面では全件表示されます。<BR>
+<TABLE border="1" cellPadding="3" cellSpacing="0" cols="<%=Num+1%>">
+<%If Num<>0 Then%>
+  <%If DtTbl(0)(6) = 0 Then %>
+  <TR class=bga>
+    <TH nowrap><%=DtTbl(0)(0)%></TH><TH nowrap><%=DtTbl(0)(1)%></TH><TH nowrap><%=DtTbl(0)(2)%></TH>
+    <TH nowrap><%=DtTbl(0)(3)%></TH><TH nowrap><%=DtTbl(0)(14)%></TH><TH nowrap><%=DtTbl(0)(15)%></TH>
+    <TH nowrap><%=DtTbl(0)(16)%><TH nowrap><%=DtTbl(0)(17)%></TH><TH nowrap><%=DtTbl(0)(8)%></TH>
+    <TH nowrap><%=DtTbl(0)(9)%></TH><TH nowrap><%=DtTbl(0)(4)%></TH><TH nowrap><%=DtTbl(0)(5)%></TH>
+    <TH nowrap><%=DtTbl(0)(11)%></TH><TH nowrap><%=DtTbl(0)(13)%>
+    <INPUT type=hidden name='Datatbl0' disabled value='<%=DtTbl(0)(0)%>,<%=DtTbl(0)(1)%>,<%=DtTbl(0)(2)%>,<%=DtTbl(0)(3)%>,<%=DtTbl(0)(4)%>,<%=DtTbl(0)(5)%>,<%=DtTbl(0)(6)%>,<%=DtTbl(0)(7)%>,<%=DtTbl(0)(8)%>,<%=DtTbl(0)(9)%>,<%=DtTbl(0)(10)%>,<%=DtTbl(0)(11)%>,<%=DtTbl(0)(12)%>,<%=DtTbl(0)(13)%>,<%=DtTbl(0)(14)%>,<%=DtTbl(0)(15)%>,<%=DtTbl(0)(16)%>,<%=DtTbl(0)(17)%>'>
+    </TH>
+  </TR>
+    <% For j=1 to Num %>
+  <TR class=bgw>
+    <TD nowrap><%=DtTbl(j)(0)%></TD><TD nowrap><%=DtTbl(j)(10)%></TD>
+    <TD nowrap><A HREF="JavaScript:GoRenew('<%=DtTbl(j)(2)%>','<%=DtTbl(j)(7)%>','<%=DtTbl(j)(1)%>','<%=DtTbl(j)(12)%>');">
+        <%=DtTbl(j)(2)%></A></TD><TD nowrap><%=DtTbl(j)(3)%></TD><TD nowrap><%=DtTbl(j)(14)%><BR></TD>
+    <TD nowrap><%=DtTbl(j)(15)%><BR></TD><TD nowrap><%=DtTbl(j)(16)%><BR><TD nowrap><%=DtTbl(j)(17)%><BR></TD>
+    <TD nowrap><%=DtTbl(j)(8)%><BR></TD><TD nowrap><%=Left(DtTbl(j)(9),12)%><BR></TD><TD nowrap><%=DtTbl(j)(4)%><BR></TD>
+    <TD nowrap><%=DtTbl(j)(5)%><BR></TD><TD nowrap><%=Left(DtTbl(j)(11),10)%><BR></TD><TD nowrap><%=Left(DtTbl(j)(13),10)%><BR>
+    <INPUT type=hidden name='Datatbl<%=j%>' disabled value='<%=DtTbl(j)(0)%>,<%=DtTbl(j)(1)%>,<%=DtTbl(j)(2)%>,<%=DtTbl(j)(3)%>,<%=DtTbl(j)(4)%>,<%=DtTbl(j)(5)%>,<%=DtTbl(j)(6)%>,<%=DtTbl(j)(7)%>,<%=DtTbl(j)(8)%>,<%=DtTbl(j)(9)%>,<%=DtTbl(j)(10)%>,<%=DtTbl(j)(11)%>,<%=DtTbl(j)(12)%>,<%=DtTbl(j)(13)%>,<%=DtTbl(j)(14)%>,<%=DtTbl(j)(15)%>,<%=DtTbl(j)(16)%>,<%=DtTbl(j)(17)%>'>
+    </TD>
+  </TR>
+    <% Next %>
+  <% Else %>
+  <TR class=bga>
+    <TH nowrap><%=DtTbl(0)(0)%></TH><TH nowrap><%=DtTbl(0)(1)%></TH><TH nowrap>指示元<BR>へ回答</TH><TH nowrap><%=DtTbl(0)(2)%></TH>
+    <TH nowrap><%=DtTbl(0)(3)%></TH><TH nowrap><%=DtTbl(0)(14)%></TH><TH nowrap><%=DtTbl(0)(15)%></TH>
+    <TH nowrap><%=DtTbl(0)(16)%></TH><TH nowrap><%=DtTbl(0)(17)%></TH><TH nowrap><%=DtTbl(0)(8)%></TH><TH nowrap><%=DtTbl(0)(9)%></TH>
+    <TH nowrap><%=DtTbl(0)(4)%></TH><TH nowrap><%=DtTbl(0)(5)%></TH><TH nowrap><%=DtTbl(0)(11)%></TH><TH nowrap><%=DtTbl(0)(13)%>
+    <INPUT type=hidden name='Datatbl0' disabled value='<%=DtTbl(0)(0)%>,<%=DtTbl(0)(1)%>,<%=DtTbl(0)(2)%>,<%=DtTbl(0)(3)%>,<%=DtTbl(0)(4)%>,<%=DtTbl(0)(5)%>,<%=DtTbl(0)(6)%>,<%=DtTbl(0)(7)%>,<%=DtTbl(0)(8)%>,<%=DtTbl(0)(9)%>,<%=DtTbl(0)(10)%>,<%=DtTbl(0)(11)%>,<%=DtTbl(0)(12)%>,<%=DtTbl(0)(13)%>,<%=DtTbl(0)(14)%>,<%=DtTbl(0)(15)%>,<%=DtTbl(0)(16)%>,<%=DtTbl(0)(17)%>'>
+    </TH>
+  </TR>
+    <% For j=1 to Num %>
+  <TR class=bgw>
+    <TD nowrap><%=DtTbl(j)(0)%></TD><TD nowrap><%=DtTbl(j)(10)%></TD>
+    <TD nowrap><%=ResA(DtTbl(j)(6))%></TD>
+    <TD nowrap><A HREF="JavaScript:GoRenew('<%=DtTbl(j)(2)%>','<%=DtTbl(j)(7)%>','<%=DtTbl(j)(1)%>','<%=DtTbl(j)(12)%>');">
+        <%=DtTbl(j)(2)%></A></TD><TD nowrap><%=DtTbl(j)(3)%></TD><TD nowrap><%=DtTbl(j)(14)%><BR></TD>
+    <TD nowrap><%=DtTbl(j)(15)%><BR></TD><TD nowrap><%=DtTbl(j)(16)%><BR></TD><TD nowrap><%=DtTbl(j)(17)%><BR></TD>
+    <TD nowrap><%=DtTbl(j)(8)%><BR></TD><TD nowrap><%=Left(DtTbl(j)(9),12)%><BR></TD>
+    <TD nowrap><%=DtTbl(j)(4)%><BR></TD><TD nowrap><%=DtTbl(j)(5)%><BR></TD><TD nowrap><%=Left(DtTbl(j)(11),10)%><BR></TD><TD nowrap><%=Left(DtTbl(j)(13),10)%><BR>
+    <INPUT type=hidden name='Datatbl<%=j%>' disabled value='<%=DtTbl(j)(0)%>,<%=DtTbl(j)(1)%>,<%=DtTbl(j)(2)%>,<%=DtTbl(j)(3)%>,<%=DtTbl(j)(4)%>,<%=DtTbl(j)(5)%>,<%=DtTbl(j)(6)%>,<%=DtTbl(j)(7)%>,<%=DtTbl(j)(8)%>,<%=DtTbl(j)(9)%>,<%=DtTbl(j)(10)%>,<%=DtTbl(j)(11)%>,<%=DtTbl(j)(12)%>,<%=DtTbl(j)(13)%>,<%=DtTbl(j)(14)%>,<%=DtTbl(j)(15)%>,<%=DtTbl(j)(16)%>,<%=DtTbl(j)(17)%>'>
+    </TD>
+  </TR>
+    <% Next %>
+  <% End If %>
+<% Else %>
+  <TR class=bgw><TD nowrap>作業案件はありません</TD></TR>
+<% End If %>
+</TABLE>
+<%'3th del Set_Data Num,DtTbl %>
+  <INPUT type=hidden name=DataNum value="<%=Num%>">
+  <INPUT type=hidden name=SortFlag value="<%=SortFlag%>" >
+  <INPUT type=hidden name=SortKye value="<%=SortKye%>" >
+  <INPUT type=hidden name=BookNo value="" >
+  <INPUT type=hidden name=CompF value="" >
+  <INPUT type=hidden name=COMPcd0 value="" >
+  <INPUT type=hidden name=COMPcd1 value="" >
+  <INPUT type=hidden name=Mord value="1" >
+  <INPUT type=hidden name=strWhere value="<%=strWrer%>" disabled>
+</Form>
+<!-------------画面終わり--------------------------->
+</BODY></HTML>

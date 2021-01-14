@@ -1,0 +1,477 @@
+<% @LANGUAGE = VBScript %>
+<%
+'_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
+'_/	SystemName	:Hits					_/
+'_/	FileName	:dmi040.asp				_/
+'_/	Function	:事前実搬出作業番号通知画面		_/
+'_/	Date		:2003/05/26				_/
+'_/	Code By		:SEIKO Electric.Co 大重			_/
+'_/	Modify		:C-002	2003/07/29	備考欄追加	_/
+'_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
+%>
+<% Option Explicit %>
+<%
+	'HTTPコンテンツタイプ設定
+	Response.ContentType = "text/html; charset=Shift_JIS"
+%>
+<!--#include File="Common.inc"-->
+<%
+'セッションの有効性をチェック
+  CheckLoginH
+
+'サーバ日付の取得
+  dim DayTime, YY,Yotei
+  getDayTime DayTime
+
+WriteLogH "STEP1", "DEBUG","01",Now
+
+'ユーザデータ所得
+  dim USER, sUN, Utype
+  USER   = UCase(Session.Contents("userid"))
+  sUN    = Session.Contents("sUN")
+  Utype  = Session.Contents("UType")
+
+'データ取得
+  dim SakuNo,Flag,Num,CONnumA(),BLnum,CMPcd(5),Rmon,Rday,Rnissu
+  dim CONsize,CONtype,CONhite,CONtear,HedId,HFrom,Hto
+  dim param,i,j,Way,Mord,WkContrlNo,Rval,RnissuA
+  dim UpFlag,strNum,ret,ErrerM
+  ret = true
+  SakuNo = Request("SakuNo")
+  Flag= Request("flag")
+  UpFlag = Request("UpFlag")
+  Num = Request("num")
+  ReDim CONnumA(Num)
+  i=0
+  For Each param In Request.Form
+    If Left(param, 6) = "CONnum" Then
+      If param <> "CONnum" Then
+        i = Mid(param,7)
+        CONnumA(i) = "'" & Request.Form(param) & "'"
+      Else
+        CONnumA(0) = Request.Form(param)
+      End If
+    ElseIf Left(param,5) = "CMPcd" Then
+      j = Right(param,1)
+      CMPcd(j) = Request.Form(param)
+    End If
+  Next
+  CONtype = Request("CONtype")
+  CONhite = Request("CONhite")
+  CONtear = Request("CONtear")
+  HedId   = Request("HedId")
+  HFrom   = Request("HFrom")
+  Hto     = Request("HTo")
+  Rmon    = Right("0" & Request("Rmon") ,2)
+  Rday    = Right("0" & Request("Rday") ,2)
+  Rnissu  = Request("Rnissu")
+
+  Way   =Array("","指定あり","指定なし","一覧から選択","ＢＬ番号")
+
+WriteLogH "STEP2", "DEBUG","02",Now
+
+'エラートラップ開始
+  on error resume next
+'DB接続
+  dim ObjConn, ObjRS, StrSQL
+  ConnDBH ObjConn, ObjRS
+
+'CW-014 add strart
+  '輸入コンテナテーブル搬出チェック
+  If Flag=4 Then
+    strNum="'"& Request("BLnum") &"'"
+  Else
+    strNum="'"& Request("CONnum") &"'"
+  End If
+  checkImportContComp ObjConn, ObjRS,strNum, Flag, ret
+
+WriteLogH "STEP3", "DEBUG","03",Now
+
+  If ret Then
+'CW-014 add end
+
+'データ整形
+    dim FullName,RFlag
+    RFlag=0
+    BLnum   = Request("BLnum")
+    CONnumA(0) = "'" & CONnumA(0) &"'"
+    If Flag = "1" Then
+      BLnum = "Null"
+      CONsize = "'" & Request("CONsize") &"'"
+    Else
+      BLnum = "'" & BLnum & "'"
+      CONsize = "Null"
+      If Flag = "4" Then
+        CONnumA(0) = "Null"
+      End If
+    End If
+
+   '元請陸運業者名取得
+    FullName= "Null"
+    If UpFlag<2 Then
+'CW-040      If CMPcd(0) <> "" Then
+      If CMPcd(1) <> "" Then
+        StrSQL = "SELECT FullName FROM mUsers WHERE mUsers.HeadCompanyCode='" & CMPcd(1) &"'"
+        ObjRS.Open StrSQL, ObjConn
+        FullName = "'" & ObjRS("FullName") & "'"
+        ObjRS.close
+      End If
+      if err <> 0 then
+        DisConnDBH ObjConn, ObjRS	'DB切断
+        jampErrerP "1","b10"&(2+Flag),"03","実搬出：データ登録","102","元請陸運業者名取得に失敗<BR>"&StrSQL
+      end if
+    End If
+    If HedId = "" Then
+      HedId   = "Null"
+    Else
+      HedId = "'" & HedId & "'"
+    End If
+
+    For i=1 To 4
+      If CMPcd(i) = "" Then
+        CMPcd(i) = "Null"
+      Else
+        If CMPcd(i) = Session.Contents("COMPcd") Then
+          RFlag=1
+        End If
+        CMPcd(i) = "'" & CMPcd(i) & "'"
+      End If
+    Next
+
+    RnissuA = Array("未入力","当日","2 日後","3 日後","4 日後","5 日後","5 日以上","リフトオフ")
+    Rval = 0
+    For i=0 To 6
+      IF RnissuA(i) = Rnissu Then
+        Rval= i
+      End If
+    Next
+    '作業予定日の年度を決定
+    If DayTime(1) > Rmon Then	'来年
+      YY = DayTime(0) +1
+    ElseIf DayTime(1) = Rmon AND DayTime(2) > Rday Then	'CW-043
+      YY = DayTime(0) +1				'CW-043
+    Else
+      YY = DayTime(0)
+    End If
+    If Rmon = "0 " Or Rday = "0 " Then
+      Yotei= "Null"
+    Else
+      Yotei= "'" & YY &"/"& Rmon &"/"& Rday & "'"
+    End If
+
+WriteLogH "STEP4", "DEBUG","04",Now
+
+    If SakuNo = "" Then '初期登録
+      WriteLogH "b10"&(2+Flag), "実搬出事前情報一覧("&Way(Flag)&")","03",""
+      Mord = 0
+    '登録重複チェック
+      If Flag=4 Then
+        strNum= BLnum
+      Else
+        strNum= CONnumA(0)
+      End If
+      checkComInfo  ObjConn, ObjRS,strNum,"1", Flag, SakuNo, ret
+      If ret Then
+       '港運コード取得
+        dim OpeCode
+'CW-041        If Flag =1 Then
+        OpeCode="Null"
+'CW-041        Else
+        If Flag <>1 Then								'CW-041 
+          StrSQL = "SELECT Count(BL.OpeCode) AS Num FROM BL WHERE BL.BLNo="& BLnum	'CW-041
+          ObjRS.Open StrSQL, ObjConn							'CW-041
+          If ObjRS("Num") <> 0 Then							'CW-041
+            ObjRS.close									'CW-041
+            StrSQL = "SELECT BL.OpeCode FROM BL WHERE BL.BLNo="& BLnum
+            ObjRS.Open StrSQL, ObjConn
+            OpeCode = Trim(ObjRS("OpeCode"))
+            OpeCode = "'" & OpeCode & "'"
+          End If				'CW-041
+          ObjRS.close
+        End If
+        if err <> 0 then
+          DisConnDBH ObjConn, ObjRS	'DB切断
+          jampErrerP "1","b10"&(2+Flag),"03","実搬出：データ登録","102","港運コード取得に失敗<BR>"&StrSQL
+        end if
+
+WriteLogH "STEP5", "DEBUG","05",Now
+
+
+      '作業管理番号採番
+        getWkContrlNo ObjConn, ObjRS, sUN, WkContrlNo
+
+WriteLogH "STEP6", "DEBUG","06",Now
+
+      '作業番号採番
+        StrSQL = "SELECT Count(WkNo) AS Num FROM hITWkNo where Status='3'"	'CW-042
+        ObjRS.Open StrSQL, ObjConn						'CW-042
+        If ObjRS("Num") <> 0 Then
+          ObjRS.close
+          StrSQL = "SELECT WkNo FROM hITWkNo where Status='3'"
+          ObjRS.Open StrSQL, ObjConn
+          SakuNo=ObjRS("WkNo")
+          ObjRS.close
+          StrSQL = "UPDATE hITWkNo SET Status='2' WHERE WkNo ='"& SakuNo &"'"
+          ObjConn.Execute(StrSQL)
+          if err <> 0 then
+            Set ObjRS = Nothing
+            jampErrerPDB ObjConn, "1","b10"&(2+Flag),"03","実搬出：データ登録","104","作業番号取得に失敗<BR>"&StrSQL
+          end if
+        Else
+          ObjRS.close
+'CW-042        If err <> 0 then
+'CW-042          err=0
+          StrSQL = "SELECT CurrentVal FROM mAutoNumber WHERE TypeCode='11'"
+          ObjRS.Open StrSQL, ObjConn
+          if err <> 0 then
+            ObjRS.Close
+            Set ObjRS = Nothing
+            jampErrerPDB ObjConn,"1","b10"&(2+Flag),"03","実搬出：データ登録","102","作業番号取得に失敗<BR>"&StrSQL
+          end if
+          SakuNo = ObjRS("CurrentVal")+1
+          ObjRS.close
+          StrSQL = "UPDATE mAutoNumber SET CurrentVal = "& SakuNo &", UpdtTime='"& now() &"',"&_
+                   "UpdtPgCd='PREDEF01',UpdtTmnl='"& USER &"' WHERE TypeCode='11'"
+          ObjConn.Execute(StrSQL)
+          if err <> 0 then
+            Set ObjRS = Nothing
+            jampErrerPDB ObjConn,"1","b10"&(2+Flag),"03","実搬出：データ登録","104","作業番号取得に失敗<BR>"&StrSQL
+          end if
+          SakuNo = Right("0000" & Hex(SakuNo),5)
+          StrSQL = "Insert Into hITWkNo (WkNo,UpdtTime,UpdtPgCd,UpdtTmnl,Status) values ('" &_
+                    SakuNo &"','"& Now() &"','PREDEF01','"& USER &"','2')"
+          ObjConn.Execute(StrSQL)
+          if err <> 0 then
+            Set ObjRS = Nothing
+            jampErrerPDB ObjConn,"1","b10"&(2+Flag),"03","実搬出：データ登録","103","作業番号取得に失敗<BR>"&StrSQL
+          end if
+        End If
+
+WriteLogH "STEP7", "DEBUG","07",Now
+
+
+    'データ登録
+        StrSQL = "Insert Into hITCommonInfo (WkContrlNo,UpdtTime,UpdtPgCd,UpdtTmnl,Status," &_
+                 "Process,WkType,FullOutType,InPutDate,UpdtUserCode,WkNo,ContNo,BLNo,OpeCode,ContSize," &_
+                 "RegisterType,RegisterName,RegisterCode,TruckerSubCode1," &_
+                 "HeadID,WorkDate,TruckerName,DeliverTo,ReturnDateStr," &_
+                 "ReturnDateVal,Comment1,Comment2,Comment3) "&_
+                 "values ('"& WkContrlNo &"','"& Now() &"','PREDEF01','"& USER &"',"&_
+                 "'0','R','1','"& Flag &"','"& Now() &"','"& USER &"','"& SakuNo &"',"& CONnumA(0) &","&_
+                  BLnum &","& OpeCode&","& CONsize &",'"& Utype &"','"& sUN &"','"& CMPcd(0) &"',"& CMPcd(1) &","&_
+                  HedId &","& Yotei &","& FullName &",'"& Hto &"','"&Rnissu &"','"& Rval &"'"&_
+                  ",'"& Request("Comment1") &"','"& Request("Comment2") &"','"& Request("Comment3") &"')"
+'C-002 ADD These Lines : ,Comment1,Comment2,Comment3
+'                      :,'"& Request("Comment1") &"','"& Request("Comment2") &"','"& Request("Comment3") &"'
+        ObjConn.Execute(StrSQL)
+        if err <> 0 then
+          Set ObjRS = Nothing
+          jampErrerPDB ObjConn,"1","b10"&(2+Flag),"03","実搬出：データ登録","103","SQL:<BR>"&StrSQL
+        end if
+
+WriteLogH "STEP8", "DEBUG","08",Now
+
+
+    '紹介テーブル登録
+        StrSQL = "Insert Into hITReference (WkContrlNo, UpdtTime, UpdtPgCd,UpdtTmnl," &_
+                 "TruckerFlag1,TruckerFlag2,TruckerFlag3,TruckerFlag4)" &_
+                 "values ('"& WkContrlNo &"','"& Now() &"','PREDEF01','"& USER &"'," &_
+                 "'"&RFlag&"','0','0','0')"
+        ObjConn.Execute(StrSQL)
+
+
+WriteLogH "STEP9", "DEBUG","09",Now
+
+        if err <> 0 then
+          Set ObjRS = Nothing
+          jampErrerPDB ObjConn,"1","b10"&(2+Flag),"03","実搬出：データ登録","104","SQL:<BR>"&StrSQL
+        end if
+        If Flag = 3 Then
+          For i=0 To Num-1
+            StrSQL = "Insert Into hITFullOutSelect (WkContrlNo,ContNo,UpdtTime,UpdtPgCd,UpdtTmnl) " &_
+                   "values ('"& WkContrlNo &"',"& CONnumA(i) &",'"& Now() &"','PREDEF01','"& USER &"')"
+            ObjConn.Execute(StrSQL)
+            if err <> 0 then
+              Set ObjRS = Nothing
+              jampErrerPDB ObjConn,"1","b10"&(2+Flag),"03","実搬出：データ登録","104","SQL:<BR>"&StrSQL
+            end if
+          Next
+        End If
+      Else
+        ErrerM="指定の作業は画面操作中に他者によって作業番号「" & SakuNo & "」で登録されました。"
+      End If
+    Else                '更新
+      Mord = Request("Mord")
+      WriteLogH "b10"&(2+Flag), "実搬出事前情報一覧("&Way(Flag)&")","14",""
+'CW-004	ADD START ↓↓↓↓↓↓↓
+     '完了・更新チェック
+      If UpFlag <>5 Then
+        StrSQL="SELECT ITC.WorkCompleteDate, ITR.TruckerFlag"& UpFlag &" AS Flag "&_
+               "FROM hITCommonInfo AS ITC INNER JOIN hITReference AS ITR ON ITC.WkContrlNo = ITR.WkContrlNo "&_
+               "Where WkNo='"& SakuNo &"' AND Process='R' AND WkType='1'"
+      Else
+        StrSQL="SELECT WorkCompleteDate FROM hITCommonInfo " &_
+               "Where WkNo='"& SakuNo &"' AND Process='R' AND WkType='1'"
+      End If
+      ObjRS.Open StrSQL, ObjConn
+      if err <> 0 then
+        ObjRS.Close
+        Set ObjRS = Nothing
+        jampErrerPDB ObjConn,"1","b10"&(2+Flag),"14","実搬出：データ登録","101","SQL:<BR>"&StrSQL
+      end if
+      If NOT IsNull(ObjRS("WorkCompleteDate")) Then 
+        ret=false
+        ErrerM="指定の作業は画面操作中に作業が完了したため、更新はキャンセルされました。"
+      End If
+     'チェック
+      If UpFlag <>5 Then
+        If Trim(ObjRS("Flag"))=1 Then 
+          ret=false
+          ErrerM="指定の作業は画面操作中に指示先に受諾されたため、更新はキャンセルされました。"
+        End If
+      End If
+      ObjRS.close
+      If ret Then
+'CW-004	End ADD ↑↑↑↑↑↑↑
+        If Mord <> 2 Then
+        'データ更新
+          dim tmpStr
+          If FullName <> "Null" Then
+            FullName=",TruckerName="& FullName &" "
+          Else
+            FullName=""
+          End If
+          If UpFlag = 5 Then
+            tmpStr = " "
+          Else
+            tmpStr=" TruckerSubCode"& UpFlag &"="& CMPcd(UpFlag) &","
+          End If
+          StrSQL = "UPDATE hITCommonInfo SET UpdtTime='"& Now() &"', UpdtPgCd='PREDEF01'," &_
+                   "UpdtTmnl='"& USER &"', Status='0', Process='R', " &_
+                   "UpdtUserCode='"& USER &"', "& tmpStr &_
+                   "HeadID="& HedId &", WorkDate="& Yotei &", DeliverTo='"& Hto &"', " &_
+                   "Comment1='"& Request("Comment1") &"',Comment2='"& Request("Comment2") &"',Comment3='"& Request("Comment3") &"', "&_
+                   "ReturnDateStr='"& Rnissu &"', ReturnDateVal='"& Rval &"' "& FullName &_
+                   "Where WkNo='"& SakuNo &"' AND Process='R' AND WkType='1'"
+'C-002 ADD This Line : "Comment1='"& Request("Comment1") &"',Comment2='"& Request("Comment2") &"',Comment3='"& Request("Comment3") &"', "&_
+          ObjConn.Execute(StrSQL)
+          if err <> 0 then
+            Set ObjRS = Nothing
+            jampErrerPDB ObjConn,"1","b10"&(2+Flag),"14","実搬出：データ登録","104","SQL:<BR>"&StrSQL
+          end if
+          If UpFlag = 5 Then
+            tmpStr = " "
+          Else
+            If UpFlag = 1 AND Mid(CMPcd(1),2,2) = UCase(Session.Contents("COMPcd")) Then 
+              tmpStr = ", TruckerFlag1=1 "
+            Else
+              tmpStr = ", TruckerFlag"& UpFlag &"=0 "
+            End If
+          End If
+          UpFlag = UpFlag-1
+          If UpFlag = 0 Then
+            tmpStr = tmpStr&" "
+          Else
+            tmpStr = tmpStr&", TruckerFlag"& UpFlag &"=1 "
+          End If
+       '参照フラグ更新
+          StrSQL = "UPDATE hITReference SET UpdtTime='"& Now() &"', UpdtPgCd='PREDEF01'," &_
+                   "UpdtTmnl='"& USER &"'"&tmpStr&_
+                   "WHERE WkContrlNo IN (select WkContrlNo From hITCommonInfo "&_
+                   "WHERE WkNo='"& SakuNo &"' AND Process='R' AND WkType='1')"
+          ObjConn.Execute(StrSQL)
+          if err <> 0 then
+            Set ObjRS = Nothing
+            jampErrerPDB ObjConn,"1","b10"&(2+Flag),"14","実搬出：データ登録","104","SQL:<BR>"&StrSQL
+          end if
+        Else
+        'ヘッダID更新
+          If UpFlag=5 Then
+            tmpStr=""
+          Else
+            tmpStr=", TruckerSubCode"& UpFlag &"=Null"
+          End If
+          StrSQL = "UPDATE hITCommonInfo SET UpdtTime='"& Now() &"', UpdtPgCd='PREDEF01'," &_
+                   "UpdtTmnl='"& USER &"', Status='0', Process='R', " &_
+                   "UpdtUserCode='"& USER &"'"& tmpStr &", HeadID=Null " &_
+                   "Where WkNo='"& SakuNo &"' AND Process='R' AND WkType='1'"
+          ObjConn.Execute(StrSQL)
+          if err <> 0 then
+            Set ObjRS = Nothing
+            jampErrerPDB ObjConn,"1","b10"&(2+Flag),"15","実搬出：保留","104","SQL:<BR>"&StrSQL
+          end if
+
+         '参照フラグ更新
+          StrSQL = "UPDATE hITReference SET UpdtTime='"& Now() &"', UpdtPgCd='PREDEF01'," &_
+                   "UpdtTmnl='"& USER &"', TruckerFlag"& UpFlag-1 &"=2 "&_
+                   "WHERE WkContrlNo IN (select WkContrlNo From hITCommonInfo "&_
+                   "WHERE WkNo='"& SakuNo &"' AND Process='R' AND WkType='1')"
+          ObjConn.Execute(StrSQL)
+          if err <> 0 then
+            Set ObjRS = Nothing
+            jampErrerPDB ObjConn,"1","b10"&(2+Flag),"15","実搬出：保留","104","SQL:<BR>"&StrSQL
+          end if
+        End If
+      End If			'CW-004
+    End If
+'CW-014 add start
+  Else
+    ErrerM="指定のコンテナは画面操作中に搬出作業が完了しました。<BR>"&_
+           "このため登録・更新処理はキャンセルされます。"
+  End If
+'CW-014 add end
+
+'DB接続解除
+  DisConnDBH ObjConn, ObjRS
+'エラートラップ解除
+  on error goto 0
+
+%>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML><HEAD>
+<LINK REL="stylesheet" TYPE="text/css" HREF="./style.css">
+<TITLE>作業番号発行</TITLE>
+<META content="text/html; charset=Shift_JIS" http-equiv=Content-Type>
+<SCRIPT src="Common.js"></SCRIPT>
+<SCRIPT language=JavaScript>
+<!--
+function CloseWin(){
+  try{
+<% If Mord=0 Then %>
+    window.opener.parent.List.location.href="./dmo010F.asp"
+<% Else %>
+    window.opener.parent.DList.location.href="./dmo010L.asp"
+<% End If %>
+  }catch(e){
+  }
+  window.close();
+}
+// -->
+</SCRIPT>
+
+<META content="MSHTML 5.00.2919.6307" name=GENERATOR></HEAD>
+<BODY leftMargin=0 topMargin=0 marginheight="0" marginwidth="0">
+<!-------------作業番号発行画面--------------------------->
+<TABLE border=0 cellPadding=5 cellSpacing=0 width="100%">
+  <TR align=center valign=bottom height=50>
+    <TD>
+<% If ret Then
+     If Mord=0 Then
+       Response.Write "      <B>作業番号発行</B></TD></TR>"&vbCrLf&"  <TR>"&vbCrLf
+       Response.Write "    <TD>"&vbCrLf&"作業番号は「" & SakuNo & "」です。"
+     Else
+       Response.Write "  <TD> 更新しました。<BR>画面は自動的に閉じられます。"
+       Response.Write "    <SCRIPT language=JavaScript>"&vbCrLf&"      CloseWin();"&vbCrLf&"    </SCRIPT>"
+     End If
+   Else
+     Response.Write "      <DIV class=alert>"&ErreRM&"</DIV>"
+   End If
+%>
+   </TD></TR>
+  <TR><TD align=center valign=bottom height=100>
+       <INPUT type=button value="閉じる" onClick="CloseWin()">
+    </TD>
+  </TR>
+</TABLE>
+<!-------------画面終わり--------------------------->
+</BODY></HTML>

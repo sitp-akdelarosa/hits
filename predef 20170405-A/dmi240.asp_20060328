@@ -1,0 +1,428 @@
+<% @LANGUAGE = VBScript %>
+<%
+'_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
+'_/	SystemName	:Hits					_/
+'_/	FileName	:dmi240.asp				_/
+'_/	Function	:事前空搬出登録・更新			_/
+'_/	Date		:2003/05/28				_/
+'_/	Code By		:SEIKO Electric.Co 大重			_/
+'_/	Modify		:C-002	2003/08/06	備考欄追加	_/
+'_/	Modify		:3th	2003/01/31	3次全面改修	_/
+'_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
+%>
+<% Option Explicit %>
+<%
+	'HTTPコンテンツタイプ設定
+	Response.ContentType = "text/html; charset=Shift_JIS"
+%>
+<!--#include File="Common.inc"-->
+<%
+'セッションの有効性をチェック
+  CheckLoginH
+
+'サーバ日付の取得
+  dim DayTime
+  getDayTime DayTime
+
+'データ所得
+  dim BookNo,COMPcd0,COMPcd1,FullName,ret,PFlag
+  dim vanMon,vanDay,vanHou,vanMin,VanTime,YY
+  dim Qty1,Qty2,Qty3,Qty4,Qty5,i
+
+  BookNo = Request("BookNo")
+  COMPcd0 = Request("COMPcd0")
+  COMPcd1 = Request("COMPcd1")
+  vanMon =Right("00" & Request("vanMon"),2)
+  vanDay =Right("00" & Request("vanDay"),2)
+  vanHou =Right("00" & Request("vanHou"),2)
+  vanMin =Right("00" & Request("vanMin"),2)
+  '日の年度を決定
+  If DayTime(1) > vanMon Then	'来年
+    YY = DayTime(0) +1
+  ElseIf DayTime(1) = vanMon AND DayTime(2) > vanDay Then
+    YY = DayTime(0) +1
+  Else
+    YY = DayTime(0)
+  End If
+  If vanMon = "00" Or vanDay = "00" Then
+    VanTime= "Null"
+  Else
+    VanTime= "'" & YY &"/"& vanMon &"/"& vanDay &" "& vanHou &":"& vanMin &"'"
+  End If
+
+'ユーザデータ所得
+  dim USER
+  USER   = UCase(Session.Contents("userid"))
+
+
+'エラートラップ開始
+  on error resume next
+'DB接続
+  dim ObjConn, ObjRS, StrSQL
+  ConnDBH ObjConn, ObjRS
+  dim tFlag
+
+  ret = true
+  'ブックの重複登録チェック
+  dim strCodes,PFlag1, PFlag2
+  checkSPBook ObjConn, ObjRS, BookNo,COMPcd0,COMPcd1,strCodes,PFlag1, PFlag2, ret
+
+  If Request("Mord") = 0 Then	'初期登録
+    If ret Then
+      BookAs ObjConn, ObjRS, BookNo,COMPcd0,ret
+    End If
+    If ret Then
+      If Trim(COMPcd1) <> "" Then
+    '元請陸運業者名取得
+        StrSQL = "SELECT FullName FROM mUsers WHERE mUsers.HeadCompanyCode='" & COMPcd1 &"'"
+        ObjRS.Open StrSQL, ObjConn
+        if err <> 0 then
+          DisConnDBH ObjConn, ObjRS	'DB切断
+          jampErrerP "1","b302","04","空搬出：データ登録","102","元請陸運業者名取得に失敗<BR>"&StrSQL
+        end if
+        FullName = "'" & ObjRS("FullName") & "'"
+        ObjRS.close
+      Else 
+        FullName = "Null"
+      End If
+      If COMPcd1 = UCase(Session.Contents("COMPcd")) Then 
+        tFlag=1
+      Else
+        tFlag=0
+      End If
+      If PFlag1="0" Then
+        StrSQL = "Insert Into SPBookInfo (BookNo, SenderCode, UpdtTime, UpdtPgCd, UpdtTmnl, Status,"&_
+                 " Process, InputDate, TruckerCode, TruckerFlag, TruckerName, Comment ) "&_
+                 "values ('"& BookNo &"','"& COMPcd0 &"','"& Now() &"','PREDEF01','"& USER &"','0',"&_
+                 "'R','"& Now() &"','"& COMPcd1 &"','"& tFlag &"',"& FullName &",'"& Request("Comment") &"')"
+        ObjConn.Execute(StrSQL)
+        if err <> 0 then
+          Set ObjRS = Nothing
+          jampErrerPDB ObjConn,"1","b302","04","空搬出：データ登録","103","SQL:<BR>"&StrSQL
+        end if
+      ElseIf PFlag1="2" Then
+        StrSQL = "UPDATE SPBookInfo SET SenderCode='"& COMPcd0 &"', UpdtTime='"& Now() &"', UpdtPgCd='PREDEF01', "&_
+                 "UpdtTmnl='"& USER &"', Status='0', Process='R', InputDate='"& Now() &"', "&_
+                 "TruckerCode='"& COMPcd1 &"', TruckerFlag='"& tFlag &"', TruckerName="& FullName&_
+                 ", Comment='"& Request("Comment") &"' "&_
+                 "WHERE BookNo='"& BookNo &"' "
+        ObjConn.Execute(StrSQL)
+        if err <> 0 then
+          Set ObjRS = Nothing
+          jampErrerPDB ObjConn,"1","b302","04","空搬出：データ登録","104","SQL:<BR>"&StrSQL
+        end if
+      Else			'2件以降
+        StrSQL = "UPDATE SPBookInfo SET SenderCode='"& COMPcd0 &"', UpdtTime='"& Now() &"', UpdtPgCd='PREDEF01', "&_
+                 "UpdtTmnl='"& USER &"', Status='0', Process='R', InputDate='"& Now() &"', "&_
+                 "TruckerCode='', TruckerFlag='"& tFlag &"', TruckerName=''"&_
+                 ", Comment='"& Request("Comment") &"' "&_
+                 "WHERE BookNo='"& BookNo &"' "
+        ObjConn.Execute(StrSQL)
+        if err <> 0 then
+          Set ObjRS = Nothing
+          jampErrerPDB ObjConn,"1","b302","04","空搬出：データ登録","104","SQL:<BR>"&StrSQL
+        end if
+      End If
+      If Request("PickNum0") = "" Then
+        Qty1="Null"
+      Else
+        Qty1="'" & Request("PickNum0") & "'"
+      End If
+      If Request("PickNum1") = "" Then
+        Qty2="Null"
+      Else
+        Qty2="'" & Request("PickNum1") & "'"
+      End If
+      If Request("PickNum2") = "" Then
+        Qty3="Null"
+      Else
+        Qty3="'" & Request("PickNum2") & "'"
+      End If
+      If Request("PickNum3") = "" Then
+        Qty4="Null"
+      Else
+        Qty4="'" & Request("PickNum3") & "'"
+      End If
+      If Request("PickNum4") = "" Then
+        Qty5="Null"
+      Else
+        Qty5="'" & Request("PickNum4") & "'"
+      End If
+      If PFlag2="0" Then
+        StrSQL = "Insert Into BookingAssign "&_
+                 "(BookNo,SenderCode,TruckerCode,UpdtTime,UpdtPgCd,UpdtTmnl,"&_
+                 "Process,InputDate,TruckerName,TruckerFlag,"&_
+                 "ContSize1,ContType1,ContHeight1,ContMaterial1,PickPlace1,Qty1,"&_
+                 "ContSize2,ContType2,ContHeight2,ContMaterial2,PickPlace2,Qty2,"&_
+                 "ContSize3,ContType3,ContHeight3,ContMaterial3,PickPlace3,Qty3,"&_
+                 "ContSize4,ContType4,ContHeight4,ContMaterial4,PickPlace4,Qty4,"&_
+                 "ContSize5,ContType5,ContHeight5,ContMaterial5,PickPlace5,Qty5,"&_
+                 "VanTime,VanPlace1,VanPlace2,GoodsName,Comment1,Comment2) "&_
+                 "values ('"& BookNo &"','"& COMPcd0 &"','"& COMPcd1 &"','"& Now() &"','PREDEF01','"& USER &"',"&_
+                 "'R','"& Now() &"',"& FullName &",'"& tFlag &"',"&_
+                 "'"& Request("ContSize0") &"','"& Request("ContType0") &"','"& Request("ContHeight0") &"','"& Request("Material0") &"','"& Request("PickPlace0") &"',"& Qty1 &","&_
+                 "'"& Request("ContSize1") &"','"& Request("ContType1") &"','"& Request("ContHeight1") &"','"& Request("Material1") &"','"& Request("PickPlace1") &"',"& Qty2 &","&_
+                 "'"& Request("ContSize2") &"','"& Request("ContType2") &"','"& Request("ContHeight2") &"','"& Request("Material2") &"','"& Request("PickPlace2") &"',"& Qty3 &","&_
+                 "'"& Request("ContSize3") &"','"& Request("ContType3") &"','"& Request("ContHeight3") &"','"& Request("Material3") &"','"& Request("PickPlace3") &"',"& Qty4 &","&_
+                 "'"& Request("ContSize4") &"','"& Request("ContType4") &"','"& Request("ContHeight4") &"','"& Request("Material4") &"','"& Request("PickPlace4") &"',"& Qty5 &","&_
+                 VanTime &",'"& Request("vanPlace1") &"','"& Request("vanPlace2") &"','"& Request("goodsName") &"','"& Request("Comment1") &"','"& Request("Comment2") &"')"
+        ObjConn.Execute(StrSQL)
+        if err <> 0 then
+          Set ObjRS = Nothing
+          jampErrerPDB ObjConn,"1","b302","04","空搬出：データ登録","103","SQL:<BR>"&StrSQL
+        end if
+      Else
+        StrSQL = "UPDATE  BookingAssign SET  "&_
+                 "UpdtTime='"& Now() &"',UpdtPgCd='PREDEF01',UpdtTmnl='"& USER &"',"&_
+                 "Process='R',InputDate='"& Now() &"',TruckerName="& FullName &",TruckerFlag='"& tFlag &"',"&_
+                 "ContSize1='"& Request("ContSize0") &"',ContType1='"& Request("ContType0") &"',ContHeight1='"& Request("ContHeight0") &"',"&_
+                 "ContMaterial1='"& Request("Material0") &"',PickPlace1='"& Request("PickPlace0") &"',Qty1="& Qty1 &","&_
+                 "ContSize2='"& Request("ContSize1") &"',ContType2='"& Request("ContType1") &"',ContHeight2='"& Request("ContHeight1") &"',"&_
+                 "ContMaterial2='"& Request("Material1") &"',PickPlace2='"& Request("PickPlace1") &"',Qty2="& Qty2 &","&_
+                 "ContSize3='"& Request("ContSize2") &"',ContType3='"& Request("ContType2") &"',ContHeight3='"& Request("ContHeight2") &"',"&_
+                 "ContMaterial3='"& Request("Material2") &"',PickPlace3='"& Request("PickPlace2") &"',Qty3="& Qty3 &","&_
+                 "ContSize4='"& Request("ContSize3") &"',ContType4='"& Request("ContType3") &"',ContHeight4='"& Request("ContHeight3") &"',"&_
+                 "ContMaterial4='"& Request("Material3") &"',PickPlace4='"& Request("PickPlace3") &"',Qty4="& Qty4 &","&_
+                 "ContSize5='"& Request("ContSize4") &"',ContType5='"& Request("ContType4") &"',ContHeight5='"& Request("ContHeight4") &"',"&_
+                 "ContMaterial5='"& Request("Material4") &"',PickPlace5='"& Request("PickPlace4") &"',Qty5="& Qty5 &","&_
+                 "VanTime="& VanTime &",VanPlace1='"& Request("vanPlace1") &"',VanPlace2='"& Request("vanPlace2") &"',"&_
+                 "GoodsName='"& Request("goodsName") &"',Comment1='"& Request("Comment1") &"',Comment2='"& Request("Comment2") &"'"&_
+                 "WHERE BookNo='"& BookNo &"' AND SenderCode='"& COMPcd0 &"' AND TruckerCode='"& COMPcd1 &"'"
+        ObjConn.Execute(StrSQL)
+        if err <> 0 then
+          Set ObjRS = Nothing
+          jampErrerPDB ObjConn,"1","b302","04","空搬出：データ登録","103","SQL:<BR>"&StrSQL
+        end if
+      End If
+    End If
+  ElseIF Request("Mord") = 1 Then	'更新
+    ret=true
+    Dim oldCOMPcd1
+    oldCOMPcd1=Request("oldCOMPcd1")
+    If oldCOMPcd1 = "" Then
+      oldCOMPcd1= " "
+    End If
+      If Trim(COMPcd1) <> "" Then
+    '元請陸運業者名取得
+        StrSQL = "SELECT FullName FROM mUsers WHERE mUsers.HeadCompanyCode='" & COMPcd1 &"'"
+        ObjRS.Open StrSQL, ObjConn
+        if err <> 0 then
+          DisConnDBH ObjConn, ObjRS	'DB切断
+          jampErrerP "1","b302","04","空搬出：データ登録","102","元請陸運業者名取得に失敗<BR>"&StrSQL
+        end if
+        FullName = "'" & ObjRS("FullName") & "'"
+        ObjRS.close
+      Else 
+        FullName = "Null"
+      End If
+      If COMPcd1 = UCase(Session.Contents("COMPcd")) Then 
+        tFlag=1
+      Else
+        tFlag=0
+      End If
+      If PFlag1="1" Then			'1件目ならば
+        StrSQL = "UPDATE SPBookInfo SET SenderCode='"& COMPcd0 &"', UpdtTime='"& Now() &"', UpdtPgCd='PREDEF01', "&_
+                 "UpdtTmnl='"& USER &"', Status='0', Process='R', "&_
+                 "TruckerCode='"& COMPcd1 &"', TruckerFlag='"& tFlag &"', TruckerName="& FullName &" "&_
+                 ", Comment='"& Request("Comment") &"' "&_
+                 "WHERE BookNo='"& BookNo &"' "
+'C-002 ADD This Line: ", Comment='"& Request("Comment") &"' "&_
+        ObjConn.Execute(StrSQL)
+        if err <> 0 then
+          Set ObjRS = Nothing
+          jampErrerPDB ObjConn,"1","b302","04","空搬出：データ登録","104","SQL:<BR>"&StrSQL
+        end if
+      End If
+      If Request("PickNum0") = "" Then
+        Qty1="Null"
+      Else
+        Qty1="'" & Request("PickNum0") & "'"
+      End If
+      If Request("PickNum1") = "" Then
+        Qty2="Null"
+      Else
+        Qty2="'" & Request("PickNum1") & "'"
+      End If
+      If Request("PickNum2") = "" Then
+        Qty3="Null"
+      Else
+        Qty3="'" & Request("PickNum2") & "'"
+      End If
+      If Request("PickNum3") = "" Then
+        Qty4="Null"
+      Else
+        Qty4="'" & Request("PickNum3") & "'"
+      End If
+      If Request("PickNum4") = "" Then
+        Qty5="Null"
+      Else
+        Qty5="'" & Request("PickNum4") & "'"
+      End If
+      '過去データの重複チェック
+      StrSQL = "SELECT Count(BookNo) AS Num FROM BookingAssign "&_
+               "WHERE BookNo='"& BookNo &"' AND TruckerCode='"& COMPcd1 &"' AND Process='D'"
+      ObjRS.Open StrSQL, ObjConn
+      if err <> 0 then
+        DisConnDBH ObjConn, ObjRS	'DB切断
+        jampErrerP "1","b000","00","ブッキング指示テーブル","101","SQL：<BR>"&StrSQL
+      end if
+      If ObjRS("Num")>0 Then  '削除されたデータが存在している場合
+        StrSQL = "UPDATE BookingAssign SET  "&_
+                 "TruckerCode='"& COMPcd1 &"',UpdtTime='"& Now() &"',UpdtPgCd='PREDEF01',UpdtTmnl='"& USER &"',"&_
+                 "Process='R',TruckerName="& FullName &",TruckerFlag='"& tFlag &"', "&_
+                 "ContSize1='"& Request("ContSize0") &"',ContType1='"& Request("ContType0") &"',ContHeight1='"& Request("ContHeight0") &"',"&_
+                 "ContMaterial1='"& Request("Material0") &"',PickPlace1='"& Request("PickPlace0") &"',Qty1="& Qty1 &", "&_
+                 "ContSize2='"& Request("ContSize1") &"',ContType2='"& Request("ContType1") &"',ContHeight2='"& Request("ContHeight1") &"',"&_
+                 "ContMaterial2='"& Request("Material1") &"',PickPlace2='"& Request("PickPlace1") &"',Qty2="& Qty2 &", "&_
+                 "ContSize3='"& Request("ContSize2") &"',ContType3='"& Request("ContType2") &"',ContHeight3='"& Request("ContHeight2") &"',"&_
+                 "ContMaterial3='"& Request("Material2") &"',PickPlace3='"& Request("PickPlace2") &"',Qty3="& Qty3 &", "&_
+                 "ContSize4='"& Request("ContSize3") &"',ContType4='"& Request("ContType3") &"',ContHeight4='"& Request("ContHeight3") &"',"&_
+                 "ContMaterial4='"& Request("Material3") &"',PickPlace4='"& Request("PickPlace3") &"',Qty4="& Qty4 &", "&_
+                 "ContSize5='"& Request("ContSize4") &"',ContType5='"& Request("ContType4") &"',ContHeight5='"& Request("ContHeight4") &"',"&_
+                 "ContMaterial5='"& Request("Material4") &"',PickPlace5='"& Request("PickPlace4") &"',Qty5="& Qty5 &", "&_
+                 "VanTime="& VanTime &",VanPlace1='"& Request("vanPlace1") &"',VanPlace2='"& Request("vanPlace2") &"', "&_
+                 "GoodsName='"& Request("goodsName") &"',Comment1='"& Request("Comment1") &"',Comment2='"& Request("Comment2") &"' "&_
+                 "WHERE BookNo='"& BookNo &"' AND SenderCode='"& COMPcd0 &"' AND TruckerCode='"& COMPcd1 &"'"
+        ObjConn.Execute(StrSQL)
+        if err <> 0 then
+          Set ObjRS = Nothing
+          jampErrerPDB ObjConn,"1","b302","04","空搬出：データ登録","104","SQL:<BR>"&StrSQL
+        end if
+          StrSQL = "UPDATE BookingAssign SET  "&_
+                   "UpdtTime='"& Now() &"',UpdtPgCd='PREDEF01',UpdtTmnl='"& USER &"',"&_
+                   "Process='D' WHERE BookNo='"& BookNo &"' AND SenderCode='"& COMPcd0 &"' AND TruckerCode='"& oldCOMPcd1 &"'"
+        ObjConn.Execute(StrSQL)
+        if err <> 0 then
+          Set ObjRS = Nothing
+          jampErrerPDB ObjConn,"1","b302","04","空搬出：データ登録","104","SQL:<BR>"&StrSQL
+        end if
+      Else
+        StrSQL = "UPDATE BookingAssign SET  "&_
+                 "TruckerCode='"& COMPcd1 &"',UpdtTime='"& Now() &"',UpdtPgCd='PREDEF01',UpdtTmnl='"& USER &"',"&_
+                 "Process='R',TruckerName="& FullName &",TruckerFlag='"& tFlag &"', "&_
+                 "ContSize1='"& Request("ContSize0") &"',ContType1='"& Request("ContType0") &"',ContHeight1='"& Request("ContHeight0") &"',"&_
+                 "ContMaterial1='"& Request("Material0") &"',PickPlace1='"& Request("PickPlace0") &"',Qty1="& Qty1 &", "&_
+                 "ContSize2='"& Request("ContSize1") &"',ContType2='"& Request("ContType1") &"',ContHeight2='"& Request("ContHeight1") &"',"&_
+                 "ContMaterial2='"& Request("Material1") &"',PickPlace2='"& Request("PickPlace1") &"',Qty2="& Qty2 &", "&_
+                 "ContSize3='"& Request("ContSize2") &"',ContType3='"& Request("ContType2") &"',ContHeight3='"& Request("ContHeight2") &"',"&_
+                 "ContMaterial3='"& Request("Material2") &"',PickPlace3='"& Request("PickPlace2") &"',Qty3="& Qty3 &", "&_
+                 "ContSize4='"& Request("ContSize3") &"',ContType4='"& Request("ContType3") &"',ContHeight4='"& Request("ContHeight3") &"',"&_
+                 "ContMaterial4='"& Request("Material3") &"',PickPlace4='"& Request("PickPlace3") &"',Qty4="& Qty4 &", "&_
+                 "ContSize5='"& Request("ContSize4") &"',ContType5='"& Request("ContType4") &"',ContHeight5='"& Request("ContHeight4") &"',"&_
+                 "ContMaterial5='"& Request("Material4") &"',PickPlace5='"& Request("PickPlace4") &"',Qty5="& Qty5 &", "&_
+                 "VanTime="& VanTime &",VanPlace1='"& Request("vanPlace1") &"',VanPlace2='"& Request("vanPlace2") &"', "&_
+                 "GoodsName='"& Request("goodsName") &"',Comment1='"& Request("Comment1") &"',Comment2='"& Request("Comment2") &"' "&_
+                 "WHERE BookNo='"& BookNo &"' AND SenderCode='"& COMPcd0 &"' AND TruckerCode='"& oldCOMPcd1 &"'"
+        ObjConn.Execute(StrSQL)
+        if err <> 0 then
+          Set ObjRS = Nothing
+          jampErrerPDB ObjConn,"1","b302","04","空搬出：データ登録","104","SQL:<BR>"&StrSQL
+        end if
+      End If
+  Else		'回答
+    ret=true
+'C-002 ADD Start
+    dim tmpstr
+    tmpstr = ""
+    If Request("Res") = 1 Then
+       tmpstr = ", Comment='"& Request("Comment") &"' "
+    End If
+'C-002 ADD End
+'    StrSQL = "UPDATE SPBookInfo SET UpdtTime='"& Now() &"', UpdtPgCd='PREDEF01', "&_
+'             "UpdtTmnl='"& USER &"', Status='0', Process='R', TruckerFlag='"&Request("Res")&"' "&_
+'             tmpstr & "WHERE BookNo='"& BookNo &"' "
+'C-002 ADD This Line: Comment&_
+'    ObjConn.Execute(StrSQL)
+'    if err <> 0 then
+'      Set ObjRS = Nothing
+'      jampErrerPDB ObjConn,"1","b302","04","空搬出：保留","102","SQL:<BR>"&StrSQL
+'    end if
+   StrSQL = "UPDATE BookingAssign SET  "&_
+            "UpdtTime='"& Now() &"',UpdtPgCd='PREDEF01',UpdtTmnl='"& USER &"',"&_
+            "TruckerFlag='"&Request("Res")&"'"&_
+            "WHERE BookNo='"& BookNo &"' AND SenderCode='"& COMPcd0 &"' AND TruckerCode='"& COMPcd1 &"'"
+    ObjConn.Execute(StrSQL)
+    if err <> 0 then
+      Set ObjRS = Nothing
+      jampErrerPDB ObjConn,"1","b302","04","空搬出：保留","102","SQL:<BR>"&StrSQL
+    end if
+  End If
+'DB接続解除
+  DisConnDBH ObjConn, ObjRS
+'エラートラップ解除
+  on error goto 0
+
+%>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML><HEAD>
+<LINK REL="stylesheet" TYPE="text/css" HREF="./style.css">
+<TITLE>事前空搬出登録・更新</TITLE>
+<META content="text/html; charset=Shift_JIS" http-equiv=Content-Type>
+
+<META content="MSHTML 5.00.2919.6307" name=GENERATOR></HEAD>
+<SCRIPT language=JavaScript>
+  function goNext(){
+<% If ret Then %>
+    try{
+  <% If Request("Mord") = 0 Then %>
+      window.opener.parent.List.location.href="./dmo210F.asp"
+  <% Else %>
+        window.opener.parent.DList.location.href="./dmo210L.asp"
+        window.opener.parent.Top.location.href="./dmo210T.asp"
+  <% End If %>
+    }catch(e){}
+  <% If Request("SijiF") = "Yes" Then %>
+    document.dmi240F.submit();
+  <% Else %>
+    window.close();
+  <% End If %>
+<% End If %>
+  }
+</SCRIPT>
+<BODY onLoad="goNext()">
+<!-------------事前空搬出登録・更新--------------------------->
+<TABLE border=0 cellPadding=5 cellSpacing=0 width="100%">
+  <TR align=center><TD>
+<% If ret Then %>
+  <% If Request("Mord") = 0 Then %>
+   登録しました。<BR>画面は自動的に閉じられます。
+  <% Else %>
+   更新しました。<BR>画面は自動的に閉じられます。
+  <% End If %>
+      </TD></TR>
+<% Else %>
+   <P><DIV class=alert>指定のブッキング番号は操作中に他者によって登録されました。</DIV></P>
+   <INPUT type=button value="閉じる" onClick="window.close()">
+<% End If %>
+</TABLE>
+<% If Request("SijiF") = "Yes" Then %>
+<FORM name="dmi240F" action="./dmo291.asp" method="POST">
+<INPUT type=hidden name="BookNo" value="<%=Request("BookNo")%>">
+<INPUT type=hidden name="COMPcd0"  value="<%=COMPcd0%>">
+<INPUT type=hidden name="COMPcd1"  value="<%=COMPcd1%>">
+<INPUT type=hidden name="shipFact" value="<%=Request("shipFact")%>">
+<INPUT type=hidden name="shipName" value="<%=Request("shipName")%>">
+<INPUT type=hidden name="delivTo"  value="<%=Request("delivTo")%>">
+  <% For i=0 To 4%>
+  <INPUT type=hidden name="ContSize<%=i%>"   value="<%=Request("ContSize"&i)%>">
+  <INPUT type=hidden name="ContType<%=i%>"   value="<%=Request("ContType"&i)%>">
+  <INPUT type=hidden name="ContHeight<%=i%>" value="<%=Request("ContHeight"&i)%>">
+  <INPUT type=hidden name="Material<%=i%>"   value="<%=Request("Material"&i)%>">
+  <INPUT type=hidden name="PickPlace<%=i%>"  value="<%=Request("PickPlace"&i)%>">
+  <INPUT type=hidden name="PickNum<%=i%>"    value="<%=Request("PickNum"&i)%>">
+  <% Next %>
+<INPUT type=hidden name="vanMon"    value="<%=Request("vanMon")%>">
+<INPUT type=hidden name="vanDay"    value="<%=Request("vanDay")%>">
+<INPUT type=hidden name="vanHou"    value="<%=Request("vanHou")%>">
+<INPUT type=hidden name="vanMin"    value="<%=Request("vanMin")%>">
+<INPUT type=hidden name="vanPlace1" value="<%=Request("VanPlace1")%>">
+<INPUT type=hidden name="vanPlace2" value="<%=Request("VanPlace2")%>">
+<INPUT type=hidden name="goodsName" value="<%=Request("GoodsName")%>">
+<INPUT type=hidden name="Terminal"  value="<%=Request("Terminal")%>">
+<INPUT type=hidden name="CYCut"    value="<%=Request("CYCut")%>">
+<INPUT type=hidden name="Comment1"  value="<%=Request("Comment1")%>">
+<INPUT type=hidden name="Comment2"  value="<%=Request("Comment2")%>">
+</FORM>
+<% End If %>
+<!-------------画面終わり--------------------------->
+</BODY></HTML>

@@ -1,0 +1,237 @@
+<html>
+<head>
+<meta http-equiv=Content-Type content="text/html; charset=shift_jis">
+<meta name=Generator content="Microsoft Word 11 (filtered)">
+<title>－Ｑ＆Ａ集－</title>
+<style>
+BODY{
+	background:#dee1ff;
+	color:#000000;
+	font-size: 10pt;
+}
+TD{ 
+	font-size: 10.5pt; 
+	font-family:MS UI Gothic;
+}
+TD.MsoNormal
+{
+	margin:0mm;
+	margin-bottom:.0001pt;
+	text-align:justify;
+	text-justify:inter-ideograph;
+	font-size:10.5pt;
+	font-family:Century;
+}
+</style>
+
+<SCRIPT language="javascript">
+<!--
+  var tabcolororig;
+  var tabfontorig;
+
+  function reappear(obj) {
+	var oObject = document.all.tags("TABLE");	
+		
+	if(oObject[obj].style.display == "none"){ 
+		oObject[obj].style.display="block";
+		oObject[obj].style.borderCollapse="collapse";
+	}else{
+		oObject[obj].style.display="none";					
+	}
+  }  
+
+  -->
+</SCRIPT>
+
+</head>
+
+<body bgcolor="DEE1FF" background="gif/loginback.gif" leftmargin="0" topmargin="0" marginwidth="0" marginheight="0">
+<TABLE width="100%" border="0" cellspacing="0" cellpadding="0" height="100%">
+  <TR>
+    <TD valign=top>
+      <TABLE width="100%" border="0" cellspacing="0" cellpadding="0">
+        <TR>
+          <TD rowspan=2><img src="../gif/qa_banner.gif" width="506" height="73"></TD>
+          <TD height="25" bgcolor="000099" align="right"><img src="../gif/logo_hits_ver2.gif" width="300" height="25"></TD>
+        </TR>
+        <TR>
+          <TD align="right" width="100%" height="48"></TD>
+        </TR>		
+      </TABLE>
+	  <TABLE width="100%" border="0" cellspacing="0" cellpadding="0">
+	  	<TR>
+			<TD width="20"></TD>
+			<TD>&nbsp;</TD>
+		</TR>
+		<TR><TD height="10"></TD></TR>		
+	  	<TR>			
+			<TD width="20"></TD>
+			<TD><a href='#' onclick='reappear("Ans1");'>ＣＹ混雑状況・映像照会の「ターミナル内所要時間」は、どの時点からどの時点までの時間を指していますか？</a>
+			</TD>
+		</TR>
+		<TR>
+			<TD width="20"></TD>
+			<TD>
+				<TABLE border=0 id="Ans1" cellspacing="0" cellpadding="0" style='display:none;height:75px;'>
+					<TR><TD height="10"></TD></TR>
+					<TR>
+						<TD width="20"></TD>
+						<TD><p>「ターミナル内所要時間」は、原則として「ゲートインからゲートアウトまでの所要時間」を表示しており、
+						ゲート前に並んだ時点からゲートインするまでの「ゲート待ち時間」は含まれておりません。</p>
+						</TD>
+					</TR>												
+					<TR>
+						<TD width="20"></TD>
+						<TD><p>「ゲート待ち時間」についても「何分」というように定量的に表示することも検討しましたが、特殊な測定機器を
+						用いた大規模な設備が必要なことや、正確性に対する技術的な課題も多いことから、システム化を見送っております。</p>
+						</TD>
+					</TR>								
+					<TR>
+						<TD width="20"></TD>
+						<TD><p>したがって、「ゲート待ち時間」につきましては、ゲート前等の映像をご覧いただき、利用者ご自身でご判断い
+						ただきますようお願いします。</p>
+						</TD>
+					</TR>								
+				</TABLE>					
+			</TD>
+		</TR>
+		<TR><TD height="10"></TD></TR>		
+		<TR>			
+			<TD width="20"></TD>
+			<TD><a href='#' onclick='reappear("Ans2");'>輸入コンテナ情報照会でコンテナ番号にて照会した時、照会結果の画面にＢ／Ｌ番号を表示できませんか？</a></TD>
+		</TR>
+		<TR>
+			<TD width="20"></TD>
+			<TD>
+				<TABLE border=0 id="Ans2" cellspacing="0" cellpadding="0" style='display:none;height:75px;'>
+					<TR><TD height="10"></TD></TR>
+					<TR>
+						<TD width="20"></TD>
+						<TD><p>お問い合わせの件は、コンテナ番号自身を第三者が容易に知りうる現状にあることを踏まえ、
+						システム上あえて表示しないようにしております。</p>
+						</TD>
+					</TR>
+					<TR>
+						<TD width="20"></TD>
+						<TD><p>つまり、コンテナ番号の照会画面でＢ／Ｌ番号が分かると、関係者以外が税関のシステムである
+						ＮＡＣＣＳで検索することが可能となり、
+						その他のコンテナ番号や貨物情報・通関情報が知られてしまうことになり、セキュリティ上好ましくないためです。</p>
+						</TD>
+					</TR>								
+					<TR>
+						<TD width="20"></TD>
+						<TD><p>また、有価証券であるＢ／Ｌの番号が関係者以外に漏れることは荷主・船会社からの信用を落とすことにもなりかねません。												
+						</p>
+						</TD>
+					</TR>
+					<TR>
+						<TD width="20"></TD>
+						<TD><p>システム開発時の関係者ヒアリングでも同様の意見が多く出され、Ｂ／Ｌ番号を非表示とした経緯もございますので、
+						何卒、ご理解いただきますようお願いします。</p>
+						</TD>
+					</TR>								
+				</TABLE>					
+			</TD>
+		</TR>
+		<TR><TD height="10"></TD></TR>		
+		<TR>			
+			<TD width="20"></TD>
+			<TD><a href='#' onclick='reappear("Ans3");'>シャトル利用の予約で本数制限があるのはなぜですか？</a></TD>
+		</TR>
+		<TR>
+			<TD width="20"></TD>
+			<TD>
+				<TABLE border=0 id="Ans3" cellspacing="0" cellpadding="0" style='display:none;height:75px;'>
+					<TR><TD height="10"></TD></TR>
+					<TR>
+						<TD width="20"></TD>
+						<TD><p>ＣＹのシャトル入口が箇所しかなくＸ線検査場行きの受付と併用している為、受付本数が多いと混雑し、
+						受付に支障を来たすことがあります。</p>
+						</TD>
+					</TR>
+					<TR>
+						<TD width="20"></TD>
+						<TD><p>						したがってシャトル予約につきましては１時間当たり一社２枠（搬入２本・搬出２本）に制限させていただいております。</p>
+						</TD>
+					</TR>
+					<TR>
+						<TD width="20"></TD>
+						<TD><p>また、スムーズなシャトル受付を行う為に、搬出のシャトル予約につきましても、
+						コンテナ情報でＣＹ搬出が可となっているコンテナのみを
+						対象とするよう、システム上の制限を設けておりますので、何卒、ご理解いただきますようお願いします。</p>
+						</TD>
+					</TR>																				
+				</TABLE>					
+			</TD>
+		</TR>
+		<TR><TD height="10"></TD></TR>		
+		<TR>			
+			<TD width="20"></TD>
+			<TD><a href='#' onclick='reappear("Ans4");'>ログイン後、操作しない状態が続くと勝手にログアウトしてしまいます。</a></TD>
+		</TR>
+		<TR>
+			<TD width="20"></TD>
+			<TD>
+				<TABLE border=0 id="Ans4" cellspacing="0" cellpadding="0" style='display:none;height:75px;'>
+					<TR><TD height="10"></TD></TR>
+					<TR>
+						<TD width="20"></TD>
+	     				<TD><p>ＨｉＴＳ　ｖｅｒ２には、サーバーの負荷軽減やセキュリティ保持の観点から、ログイン後全く操作がない状態が
+					 ３０分続いた場合には、自動的にログアウトする機能がついています。お手数ですが、再度ログインのうえご利用ください。</p>
+						</TD>
+					</TR>																								
+				</TABLE>					
+			</TD>
+		</TR>
+		<TR><TD height="10"></TD></TR>		
+		<TR>			
+			<TD width="20"></TD>
+			<TD><a href='#' onclick='reappear("Ans5");'>ＨｉＴＳ上で表示される通関情報は、ＮＡＣＣＳで表示される通関情報とタイムラグがあるのですが。</a></TD>
+		</TR>
+		<TR>
+			<TD width="20"></TD>
+			<TD>
+				<TABLE border=0 id="Ans5" cellspacing="0" cellpadding="0" style='display:none;height:75px;'>
+					<TR><TD height="10"></TD></TR>
+					<TR>
+						<TD width="20"></TD>
+						<TD><p>通関情報の流れは、まず、ターミナルオペレーションシステム（ＫＡＣＣＳ）がＳｅａ－ＮＡＣＣＳよりデータを取得し、
+						必要な情報処理を行った後、搬出可否の決定を行い、その結果をＨｉＴＳ上で公開する、ということになっています。</p>
+						</TD>
+					</TR>	
+					<TR>
+						<TD width="20"></TD>
+						<TD><p>従いまして、必然的にタイムラグが生じることになります。現在のシステムでは、プログラム上５分～１０分程度のタイムラグが生じておりますが、
+更新するデータ量やサーバに掛かる負荷、ＫＡＣＣＳにおける情報処理に必要とされる時間を考慮いたしますと、これ以上の短縮は困難と考えられます。</p>																							
+						</TD>
+					</TR>	
+					<TR>
+						<TD width="20"></TD>
+						<TD><p>						ターミナルからの搬出可否は、通関情報だけではなくＤ／Ｏ発行その他の情報を包括的に処理し決定されますので、情報処理に要する時間が必ず必要であり、
+						タイムラグの短縮には限度がございます。</p>
+						</TD>
+					</TR>
+						<TD width="20"></TD>	
+						<TD><p>何卒、ご理解頂きますようお願いいたします。</p></TD>
+					</TR>	
+				</TABLE>					
+			</TD>
+		</TR>
+	  </TABLE>	  
+	</TD>
+  </TR>	  
+  <TR>
+    <TD valign="bottom">
+    	<TABLE width='100%' border='0' cellspacing='0' cellpadding='0'>
+	 	   <TR>
+		    <TD valign='bottom' align='right'><a href='http://www.hits-h.com/index.asp'><img src='image/b-top.gif' border='0' width='105' height='23' usemap='#map'></a></TD>
+		   </TR>
+		   <TR>
+		    <TD bgcolor='000099' height='10'><img src='../gif/1.gif'></TD>
+    	   </TR>
+    	</TABLE>
+    </TD>
+  </TR>  
+</TABLE>
+</body>
+</html>

@@ -1,0 +1,181 @@
+a.splink:link,a.splink:visited,a.splink:hover{margin:0px;padding:1px 2px 1px 2px;border-top:solid 1px #cccccc;border-right:solid 1px #033000;border-bottom:solid 1px #033000;border-left:solid 1px #cccccc;display:block;background:#ff0000;color:#ffffff;text-decoration:none;font-size:12px;}font.buttom{margin:0px;padding:1px 2px 1px 2px;border-top:solid 1px #cccccc;border-right:solid 1px #033000;border-bottom:solid 1px #033000;border-left:solid 1px #cccccc;display:block;background:#ff0000;color:#ffffff;text-decoration:none;font-size:12px;}/* ADD_S  by nics 2009.03.06 *//*ダミー釦用定義*/a.dummylink:link,a.dummylink:visited,a.dummylink:hover{margin:0px;padding:1px 2px 1px 2px;border-top:solid 1px #cccccc;border-right:solid 1px #033000;border-bottom:solid 1px #033000;border-left:solid 1px #cccccc;display:block;background:#808080;color:#ffffff;text-decoration:none;font-size:12px;}/* ADD_E  by nics 2009.03.06 *//* 2012/07/24 Add-S  by MES SUZAKI */
+/*深セン地区用定義*/
+a.splinkG:link,a.splinkG:visited{
+margin:0px;
+padding:1px 2px 1px 2px;
+border-top:solid 1px #cccccc;
+border-right:solid 1px #033000;
+border-bottom:solid 1px #033000;
+border-left:solid 1px #cccccc;
+display:block;
+background:#009900;
+color:#ffffff;
+text-decoration:none;
+font-size:12px;
+}
+
+a.splinkG:hover{
+margin:0px;
+padding:1px 2px 1px 2px;
+border-top:solid 1px #111111;
+border-right:solid 1px #dddddd;
+border-bottom:solid 1px #dddddd;
+border-left:solid 1px #111111;
+display:block;
+background:#0000ff;
+color:#ffffff;
+text-decoration:none;
+font-size:12px;
+}
+
+/*広州地区用定義*/
+a.splinkY:link,a.splinkY:visited{
+margin:0px;
+padding:1px 2px 1px 2px;
+border-top:solid 1px #cccccc;
+border-right:solid 1px #033000;
+border-bottom:solid 1px #033000;
+border-left:solid 1px #cccccc;
+display:block;
+background:#FF7F27;
+color:#000000;
+text-decoration:none;
+font-size:12px;
+}
+
+a.splinkY:hover{
+margin:0px;
+padding:1px 2px 1px 2px;
+border-top:solid 1px #111111;
+border-right:solid 1px #dddddd;
+border-bottom:solid 1px #dddddd;
+border-left:solid 1px #111111;
+display:block;
+background:#0000ff;
+color:#ffffff;
+text-decoration:none;
+font-size:12px;
+}
+
+/*青島地区用定義*/
+a.splinkB:link,a.splinkB:visited{
+margin:0px;
+padding:1px 2px 1px 2px;
+border-top:solid 1px #cccccc;
+border-right:solid 1px #033000;
+border-bottom:solid 1px #033000;
+border-left:solid 1px #cccccc;
+display:block;
+background:#33CCFF;
+color:#000000;
+text-decoration:none;
+font-size:12px;
+}
+
+a.splinkB:hover{
+margin:0px;
+padding:1px 2px 1px 2px;
+border-top:solid 1px #111111;
+border-right:solid 1px #dddddd;
+border-bottom:solid 1px #dddddd;
+border-left:solid 1px #111111;
+display:block;
+background:#0000ff;
+color:#ffffff;
+text-decoration:none;
+font-size:12px;
+}
+/* 2012/07/24  Add-E  by MES SUZAKI */
+
+/* 2015/04/07  add-s  by MES */
+/*台北用定義*/
+a.splinkR:link,a.splinkR:visited{
+margin:0px;
+padding:1px 2px 1px 2px;
+border-top:solid 1px #cccccc;
+border-right:solid 1px #033000;
+border-bottom:solid 1px #033000;
+border-left:solid 1px #cccccc;
+display:block;
+background:#FFF200;
+color:#000000;
+text-decoration:none;
+font-size:12px;
+}
+
+a.splinkR:hover{
+margin:0px;
+padding:1px 2px 1px 2px;
+border-top:solid 1px #111111;
+border-right:solid 1px #dddddd;
+border-bottom:solid 1px #dddddd;
+border-left:solid 1px #111111;
+display:block;
+background:#0000ff;
+color:#ffffff;
+text-decoration:none;
+font-size:12px;
+}
+/* 2015/04/07  add-e  by MES */
+
+/* 2015/05/22  add-s  by MES */
+/*バンコク用定義*/
+a.splinkLG:link,a.splinkLG:visited{
+margin:0px;
+padding:1px 2px 1px 2px;
+border-top:solid 1px #cccccc;
+border-right:solid 1px #033000;
+border-bottom:solid 1px #033000;
+border-left:solid 1px #cccccc;
+display:block;
+background:#75FF75;
+color:#000000;
+text-decoration:none;
+font-size:12px;
+}
+
+a.splinkLG:hover{
+margin:0px;
+padding:1px 2px 1px 2px;
+border-top:solid 1px #111111;
+border-right:solid 1px #dddddd;
+border-bottom:solid 1px #dddddd;
+border-left:solid 1px #111111;
+display:block;
+background:#0000ff;
+color:#ffffff;
+text-decoration:none;
+font-size:12px;
+}
+/* 2015/05/22  add-e  by MES */
+
+/* 2015/12/16  add-s  by MES */
+/*天津用定義*/
+a.splinkBR:link,a.splinkBR:visited{
+margin:0px;
+padding:1px 2px 1px 2px;
+border-top:solid 1px #cccccc;
+border-right:solid 1px #033000;
+border-bottom:solid 1px #033000;
+border-left:solid 1px #cccccc;
+display:block;
+background:#880015;
+color:#ffffff;
+text-decoration:none;
+font-size:12px;
+}
+
+a.splinkBR:hover{
+margin:0px;
+padding:1px 2px 1px 2px;
+border-top:solid 1px #111111;
+border-right:solid 1px #dddddd;
+border-bottom:solid 1px #dddddd;
+border-left:solid 1px #111111;
+display:block;
+background:#0000ff;
+color:#ffffff;
+text-decoration:none;
+font-size:12px;
+}
+/* 2015/12/16  add-e  by MES */
